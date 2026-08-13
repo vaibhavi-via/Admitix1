@@ -1,0 +1,1 @@
+"""Admission cycle module package."""

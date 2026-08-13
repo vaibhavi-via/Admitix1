@@ -1,0 +1,7 @@
+"""Constants for courses, fees, and seat matrices."""
+
+DEFAULT_PAGE_SIZE = 20
+MAX_PAGE_SIZE = 100
+COURSE_CODE_MAX_LENGTH = 30
+MIN_SEAT_CAPACITY = 0
+DEFAULT_CURRENCY = "INR"

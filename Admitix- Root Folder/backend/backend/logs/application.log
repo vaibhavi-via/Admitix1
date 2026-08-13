@@ -1,0 +1,7 @@
+2026-08-12 11:16:32,942 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-12 11:25:26,008 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-12 11:25:41,272 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-12 11:32:53,166 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-12 11:34:33,505 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-12 12:14:08,909 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-12 12:16:56,301 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API

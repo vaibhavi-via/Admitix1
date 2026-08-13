@@ -1,0 +1,8 @@
+"""Constants for admission applications."""
+
+DEFAULT_PAGE_SIZE = 20
+MAX_PAGE_SIZE = 100
+APPLICATION_NUMBER_PREFIX = "APP"
+MAX_PREFERENCES = 10
+DRAFT_STATUS = "draft"
+SUBMITTED_STATUS = "submitted"

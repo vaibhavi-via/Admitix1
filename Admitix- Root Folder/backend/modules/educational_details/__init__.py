@@ -1,0 +1,1 @@
+"""Student educational-detail module."""

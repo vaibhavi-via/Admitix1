@@ -1,0 +1,7 @@
+"""Constants for user and staff accounts."""
+
+DEFAULT_PAGE_SIZE = 20
+MAX_PAGE_SIZE = 100
+USER_ACTIVE = True
+USER_INACTIVE = False
+PROFILE_PHOTO_MAX_SIZE_BYTES = 5 * 1024 * 1024

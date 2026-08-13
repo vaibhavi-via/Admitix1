@@ -1,0 +1,279 @@
+ import { useEffect, useState } from 'react'
+import { Save, X } from 'lucide-react'
+import FormField from './FormField'
+import { isValidUUID, normalizeUUID } from '../../utils/uuid'
+import { loadRelationOptions } from './relationOptions'
+
+export default function EntityForm({
+  fields,
+  initialValues = {},
+  onSubmit,
+  onCancel,
+  isSubmitting = false,
+  submitLabel = 'Save',
+  error,
+  mode = 'create',
+  onValuesChange,
+}) {
+  const [values, setValues] = useState(() => {
+    const base = {}
+
+    fields.forEach((f) => {
+      const incoming = initialValues[f.name]
+
+      base[f.name] =
+        incoming !== undefined && incoming !== null
+          ? incoming
+          : f.type === 'checkbox'
+            ? false
+            : ''
+    })
+
+    return base
+  })
+
+  const [fieldErrors, setFieldErrors] = useState({})
+  const [relationOptions, setRelationOptions] = useState({})
+  const [relationLoading, setRelationLoading] = useState({})
+
+  useEffect(() => {
+    let cancelled = false
+    const relations = [...new Set(
+      fields
+        .map((field) => field.relation)
+        .filter(Boolean),
+    )]
+
+    if (relations.length === 0) {
+      setRelationOptions({})
+      setRelationLoading({})
+      return undefined
+    }
+
+    setRelationLoading(
+      Object.fromEntries(relations.map((relation) => [relation, true])),
+    )
+
+    Promise.all(
+      relations.map(async (relation) => {
+        try {
+          const options = await loadRelationOptions(relation)
+          return [relation, options]
+        } catch {
+          return [relation, []]
+        }
+      }),
+    ).then((results) => {
+      if (cancelled) return
+      setRelationOptions(Object.fromEntries(results))
+      setRelationLoading(
+        Object.fromEntries(relations.map((relation) => [relation, false])),
+      )
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [fields])
+
+  const resolvedFields = fields.map((field) => {
+    if (!field.relation) return field
+
+    return {
+      ...field,
+      type: 'select',
+      options: relationOptions[field.relation] || field.options || [],
+      loading: relationLoading[field.relation],
+      disabled: field.disabled || relationLoading[field.relation],
+    }
+  })
+
+  const handleChange = (name, value) => {
+    setValues((prev) => {
+      const next = { ...prev, [name]: value }
+      return onValuesChange?.(next, name, value) || next
+    })
+
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: undefined,
+    }))
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+
+    const errors = {}
+
+    resolvedFields.forEach((f) => {
+      const required =
+        f.requiredOnCreate !== undefined
+          ? mode === 'create'
+            ? f.requiredOnCreate
+            : (f.requiredOnEdit ?? f.required)
+          : f.required
+
+      const rawValue = values[f.name]
+
+      const value =
+        typeof rawValue === 'string'
+          ? rawValue.trim()
+          : rawValue
+
+      if (
+        required &&
+        !f.readOnly &&
+        (value === '' || value === null || value === undefined)
+      ) {
+        errors[f.name] = `${f.label} is required.`
+        return
+      }
+
+      if (
+        !f.readOnly &&
+        f.format === 'uuid' &&
+        value !== '' &&
+        value !== null &&
+        value !== undefined &&
+        !isValidUUID(value)
+      ) {
+        errors[f.name] =
+          `${f.label} must be a valid UUID.`
+      }
+    })
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      return
+    }
+
+    const normalizedValues = Object.fromEntries(
+      Object.entries(values).map(([name, rawValue]) => {
+        const field = resolvedFields.find((f) => f.name === name)
+
+        const required =
+          field?.requiredOnCreate !== undefined
+            ? mode === 'create'
+              ? field.requiredOnCreate
+              : (field.requiredOnEdit ?? field.required)
+            : field?.required
+
+        const value =
+          typeof rawValue === 'string'
+            ? rawValue.trim()
+            : rawValue
+
+        if (
+          field?.format === 'uuid' &&
+          !required &&
+          (value === '' ||
+            value === null ||
+            value === undefined)
+        ) {
+          return [name, null]
+        }
+
+        return [
+          name,
+          typeof value === 'string'
+            ? normalizeUUID(value)
+            : value,
+        ]
+      }),
+    )
+
+    onSubmit(normalizedValues)
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Server error */}
+      {error && (
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+          <div className="flex items-start gap-3">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-100 text-xs font-bold text-red-600">
+              !
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-red-800">
+                Unable to save
+              </p>
+
+              <p className="mt-0.5 text-xs leading-5 text-red-600">
+                {typeof error === 'string'
+                  ? error
+                  : JSON.stringify(error)}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Form fields */}
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+          <h2 className="text-sm font-bold text-slate-800">
+            {mode === 'edit'
+              ? 'Edit information'
+              : 'Institution information'}
+          </h2>
+
+          <p className="mt-1 text-xs text-slate-400">
+            Fields marked with <span className="text-red-500">*</span> are
+            required.
+          </p>
+        </div>
+
+        <div className="p-5 sm:p-6">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
+            {resolvedFields.map((field) => (
+              <div
+                key={field.name}
+                className={
+                  field.type === 'textarea'
+                    ? 'md:col-span-2'
+                    : ''
+                }
+              >
+                <FormField
+                  field={field}
+                  value={values[field.name]}
+                  onChange={handleChange}
+                  error={fieldErrors[field.name]}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <X size={16} />
+            Cancel
+          </button>
+        )}
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-600/20 transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Save size={16} />
+
+          {isSubmitting
+            ? 'Saving...'
+            : submitLabel}
+        </button>
+      </div>
+    </form>
+  )
+}

@@ -1,0 +1,109 @@
+2026-08-05 12:11:02,245 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 12:11:31,742 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-05 12:26:59,347 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-05 12:56:10,674 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 12:56:18,563 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-05 12:58:03,367 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Student Management System
+2026-08-05 12:58:09,635 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 13:04:57,225 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Student Management System
+2026-08-05 13:05:04,976 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 13:05:12,957 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-05 13:19:51,608 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Student Management System
+2026-08-05 13:20:01,481 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 13:20:11,711 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-05 13:27:16,303 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Student Management System
+2026-08-05 13:27:29,407 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 13:27:36,168 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-05 13:30:58,002 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Student Management System
+2026-08-05 13:31:13,605 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 13:34:36,381 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Student Management System
+2026-08-05 13:34:56,420 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 13:35:02,746 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-05 19:32:57,742 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 19:33:14,652 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-05 19:57:59,228 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 19:58:05,968 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-05 20:11:13,967 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Student Management System
+2026-08-05 20:11:26,536 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 20:11:26,538 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Student Management System
+2026-08-05 20:11:28,958 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 20:17:56,660 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Student Management System
+2026-08-05 20:17:59,496 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 20:18:04,206 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Student Management System
+2026-08-05 20:18:10,051 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Student Management System
+2026-08-05 20:20:56,709 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Student Management System
+2026-08-05 20:20:59,665 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-05 20:21:04,245 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-05 20:21:09,154 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-05 20:21:13,724 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-05 20:26:43,210 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-05 20:26:48,717 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-05 20:26:48,719 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-10 23:26:19,279 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-10 23:26:32,904 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-11 09:05:02,737 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 09:27:56,570 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 09:29:20,695 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 09:29:23,178 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:11:21,122 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:13:45,435 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-11 10:14:15,704 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:15:51,406 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:15:54,529 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-11 10:19:36,805 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:19:38,909 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:19:38,910 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:21:54,260 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:22:01,623 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-11 10:26:52,065 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:26:54,300 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:27:53,392 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:27:55,741 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:30:22,819 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:30:25,515 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:30:25,517 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-11 10:35:23,305 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:35:25,843 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:36:30,917 | INFO     | StudentManagementAPI | main.py:49 | Root API called.
+2026-08-11 10:49:47,132 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:51:22,242 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:51:24,878 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:53:27,879 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:53:30,254 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:53:30,257 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:53:32,584 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:53:56,506 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:53:58,744 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:54:41,516 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:54:43,832 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:54:43,834 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:54:46,290 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:55:53,065 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:55:55,340 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 10:57:48,844 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 10:57:51,072 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 11:07:33,594 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 11:07:36,063 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 11:07:36,066 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 11:07:38,287 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 11:10:45,420 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 11:10:47,717 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 11:10:47,719 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 11:10:49,916 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 11:11:54,297 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 11:11:59,900 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 11:12:33,152 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 11:12:35,378 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 11:12:35,380 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 11:12:37,724 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 11:14:01,046 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 18:43:20,296 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 19:02:19,553 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-11 19:04:42,405 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 19:08:02,020 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-11 19:30:23,623 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-12 09:29:03,410 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-12 10:15:25,021 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-12 10:15:28,812 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-12 11:51:40,014 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
+2026-08-12 12:01:39,695 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API

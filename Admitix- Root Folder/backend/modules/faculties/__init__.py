@@ -1,0 +1,1 @@
+"""Faculties module package."""

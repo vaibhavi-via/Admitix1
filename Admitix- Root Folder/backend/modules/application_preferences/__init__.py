@@ -1,0 +1,1 @@
+"""Application course-preference module."""
