@@ -5,3 +5,7 @@ __pycache__/
 .vscode/
 .pytest_cache/
 .mypy_cache/
+*.zip
+*.mp4
+*.pdf
+cls
