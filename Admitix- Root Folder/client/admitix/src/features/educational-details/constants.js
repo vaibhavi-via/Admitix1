@@ -7,7 +7,7 @@ export const EDUCATIONAL_DETAILS_MODULE = {
 // Details pages for this module. Add/remove/reorder fields here —
 // every page picks them up automatically.
 export const educationalDetailsFields = [
-  { name: "student_id", label: "Student", type: "select", required: true , format: "uuid", relation: "student" },
+  { name: "student_id", label: "Student ID", type: "text", required: true , format: "uuid" },
   { name: "qualification", label: "Qualification", type: "text", required: true },
   { name: "board_university", label: "Board / University", type: "text" },
   { name: "institution_name", label: "Institution Name", type: "text" },

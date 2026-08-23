@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from uuid import UUID
+from sqlalchemy.orm import Session
+from db.session import get_db
+from core.authentication import CurrentUser
 
-from .service import analyze_document, cross_verify_documents, extract_document_data
+from .service import analyze_document, analyze_and_persist_document, cross_verify_documents, extract_document_data
 
 router = APIRouter(prefix="/ai", tags=["AI Document Intelligence"])
 
@@ -27,6 +31,13 @@ async def verify_document(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.post("/document-verification/{document_id}")
+async def verify_and_persist_document(document_id: UUID, current_user: CurrentUser, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    try: return await analyze_and_persist_document(db, document_id, file, current_user)
+    except ValueError as exc: raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RuntimeError as exc: raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @router.post("/cross-document-verification")

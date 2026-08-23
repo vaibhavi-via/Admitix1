@@ -7,8 +7,8 @@ export const STUDENTS_MODULE = {
 // Details pages for this module. Add/remove/reorder fields here —
 // every page picks them up automatically.
 export const studentsFields = [
-  { name: "user_id", label: "User", type: "select", required: true , format: "uuid", relation: "user" },
-  { name: "institution_id", label: "Institution", type: "select", required: true , format: "uuid", relation: "institution" },
+  { name: "user_id", label: "User ID", type: "text", required: true , format: "uuid" },
+  { name: "institution_id", label: "Institution ID", type: "text", required: true , format: "uuid" },
   { name: "aadhaar_no", label: "Aadhaar No.", type: "text" },
   { name: "gender", label: "Gender", type: "select", options: ["male", "female", "other", "prefer_not_to_say"] },
   { name: "dob", label: "Date of Birth", type: "date" },

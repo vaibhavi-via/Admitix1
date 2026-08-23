@@ -7,9 +7,9 @@ export const STAFF_MODULE = {
 // Details pages for this module. Add/remove/reorder fields here —
 // every page picks them up automatically.
 export const staffFields = [
-  { name: "user_id", label: "User", type: "select", required: true , format: "uuid", relation: "user" },
-  { name: "institution_id", label: "Institution", type: "select", required: true , format: "uuid", relation: "institution" },
-  { name: "department_id", label: "Department", type: "select" , format: "uuid", relation: "department" },
+  { name: "user_id", label: "User ID", type: "text", required: true , format: "uuid" },
+  { name: "institution_id", label: "Institution ID", type: "text", required: true , format: "uuid" },
+  { name: "department_id", label: "Department ID", type: "text" , format: "uuid" },
   { name: "employee_id", label: "Employee ID", type: "text", required: true },
   { name: "designation", label: "Designation", type: "text" },
   { name: "joining_date", label: "Joining Date", type: "date" },

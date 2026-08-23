@@ -28,6 +28,15 @@ class LoginRequest(BaseModel):
     institution_code: str | None = Field(None, max_length=20)
 
 
+class RegisterRequest(BaseModel):
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: str | None = Field(None, max_length=100)
+    email: EmailStr
+    password: str = Field(..., min_length=8, max_length=128)
+    phone: str | None = Field(None, max_length=20)
+    institution_code: str = Field(..., min_length=2, max_length=20)
+
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str

@@ -25,7 +25,15 @@ try:
 except ImportError:  # pragma: no cover
     fitz = None
 
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException
+from sqlalchemy.orm import Session
+from core.authorization import require_same_institution, role_name
+from modules.documents.models import Document
+from modules.applications.models import Application
+from modules.students.models import Student
+from modules.ai_verification.models import AIVerification
+from modules.users.models import User
+from core.enums import AIVerificationStatus
 
 
 # ---------------------------------------------------------------------------
@@ -46,7 +54,8 @@ GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 # sent to Llama for structuring, verification and comparison.
 GROQ_MODEL = os.getenv(
     "GROQ_MODEL",
-    "llama-3.3-70b-versatile",
+    "openai/gpt-oss-120b",
+    # "llama-3.3-70b-versatile",
 )
 
 MAX_UPLOAD_BYTES = 12 * 1024 * 1024
@@ -663,4 +672,25 @@ DOCUMENTS:
         for document in documents
     ]
 
+    return result
+
+
+async def analyze_and_persist_document(db: Session, document_id, upload: UploadFile, current_user: User):
+    document = db.get(Document, document_id)
+    if document is None: raise HTTPException(status_code=404, detail="Document not found.")
+    application = db.get(Application, document.application_id); student = db.get(Student, application.student_id) if application else None
+    if student is None: raise HTTPException(status_code=404, detail="Document application not found.")
+    require_same_institution(current_user, student.institution_id)
+    if role_name(current_user) == "student" and student.user_id != current_user.user_id: raise HTTPException(status_code=403, detail="You cannot verify this document.")
+    result = await analyze_document(upload)
+    decision = result.get('decision','manual_review'); status_value={'passed':AIVerificationStatus.PASSED,'failed':AIVerificationStatus.FAILED}.get(decision,AIVerificationStatus.MANUAL_REVIEW)
+    quality=result.get('quality') or {}; blur=quality.get('blur_risk'); blur_score=None if blur is None else max(0,min(100,100-float(blur)))
+    identity=result.get('extracted_identity') or {}; extracted=(identity.get('full_name') or '').strip().lower(); expected=f"{student.user.first_name} {student.user.last_name or ''}".strip().lower(); name_match=None if not extracted else (expected in extracted or extracted in expected)
+    issues=result.get('issues') or []; missing=', '.join(str(x.get('details',x)) for x in issues if isinstance(x,dict) and x.get('status')=='failed') or None
+    record=db.query(AIVerification).filter(AIVerification.document_id==document_id).first()
+    if record is None: record=AIVerification(document_id=document_id); db.add(record)
+    from datetime import datetime, timezone
+    record.ocr_text=result.get('ocr_text'); record.confidence_score=result.get('confidence_score'); record.blur_score=blur_score; record.missing_fields=missing; record.name_match=name_match; record.status=status_value; record.verified_at=datetime.now(timezone.utc)
+    db.commit(); db.refresh(record)
+    result.update({'persisted':True,'verification_id':str(record.verification_id),'document_id':str(document_id),'saved_status':record.status.value})
     return result

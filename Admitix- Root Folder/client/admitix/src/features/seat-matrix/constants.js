@@ -7,7 +7,7 @@ export const SEAT_MATRIX_MODULE = {
 // Details pages for this module. Add/remove/reorder fields here —
 // every page picks them up automatically.
 export const seatMatrixFields = [
-  { name: "course_id", label: "Course", type: "select", required: true , format: "uuid", relation: "course" },
+  { name: "course_id", label: "Course ID", type: "text", required: true , format: "uuid" },
   { name: "category", label: "Category", type: "text", required: true },
   { name: "total_seats", label: "Total Seats", type: "number", required: true },
   { name: "filled_seats", label: "Filled Seats", type: "number", helpText: "Kept in sync automatically as application preferences are allotted." }

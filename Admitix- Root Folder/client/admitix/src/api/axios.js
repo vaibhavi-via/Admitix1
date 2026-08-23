@@ -49,12 +49,6 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
-
-  // Let the browser/Axios set the multipart boundary for file uploads.
-  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
-    delete config.headers['Content-Type']
-  }
-
   return config
 })
 
@@ -64,16 +58,24 @@ api.interceptors.response.use(
     response.data = normalizeResponseData(response.data)
     return response
   },
-  (error) => {
+  async (error) => {
     const status = error.response?.status
 
     if (status === 401) {
-      // Token missing/expired — clear it and let ProtectedRoute redirect.
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('user')
-      if (!window.location.pathname.startsWith('/login')) {
-        window.location.href = '/login'
+      const original = error.config
+      const refresh = localStorage.getItem('refresh_token')
+      if (refresh && !original?._retry && !original?.url?.includes('/auth/refresh-token')) {
+        original._retry = true
+        try {
+          const r = await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/auth/refresh-token`, { refresh_token: refresh })
+          localStorage.setItem('access_token', r.data.access_token)
+          localStorage.setItem('refresh_token', r.data.refresh_token)
+          original.headers.Authorization = `Bearer ${r.data.access_token}`
+          return api(original)
+        } catch {}
       }
+      localStorage.removeItem('access_token'); localStorage.removeItem('refresh_token'); localStorage.removeItem('user')
+      if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) window.location.href = '/login'
     }
 
     const message = normalizeApiError(error)

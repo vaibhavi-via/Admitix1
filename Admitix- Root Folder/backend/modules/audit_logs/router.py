@@ -3,7 +3,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from backend.db.session import get_db
+from db.session import get_db
+from core.authentication import CurrentUser
 
 from .schema import (
     AuditLogCreate,
@@ -28,6 +29,7 @@ router = APIRouter(
 )
 async def create_audit_log_route(
     audit_log_data: AuditLogCreate,
+    current_user: CurrentUser,
     db: Session = Depends(get_db),
 ):
     return create_audit_log(db, audit_log_data)
@@ -38,9 +40,10 @@ async def create_audit_log_route(
     response_model=list[AuditLogRead],
 )
 async def get_audit_logs_route(
+    current_user: CurrentUser,
     db: Session = Depends(get_db),
 ):
-    return get_audit_logs(db)
+    return get_audit_logs(db, current_user)
 
 
 @router.get(
@@ -49,6 +52,7 @@ async def get_audit_logs_route(
 )
 async def get_audit_log_by_id_route(
     audit_log_id: UUID,
+    current_user: CurrentUser,
     db: Session = Depends(get_db),
 ):
-    return get_audit_log_by_id(db, audit_log_id)
+    return get_audit_log_by_id(db, audit_log_id, current_user)

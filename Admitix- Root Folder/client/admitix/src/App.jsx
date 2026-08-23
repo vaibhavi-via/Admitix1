@@ -121,7 +121,6 @@ import AiVerificationListPage from './features/ai-verification/pages/AiVerificat
 import AiVerificationCreatePage from './features/ai-verification/pages/AiVerificationCreatePage'
 import AiVerificationEditPage from './features/ai-verification/pages/AiVerificationEditPage'
 import AiVerificationDetailsPage from './features/ai-verification/pages/AiVerificationDetailsPage'
-import AiDocumentIntelligencePage from './features/ai-verification/pages/AiDocumentIntelligencePage'
 
 // ---- Payments ----
 import PaymentsListPage from './features/payments/pages/PaymentsListPage'
@@ -271,7 +270,6 @@ export default function App() {
 
             {/* AI Verification */}
             <Route path="/ai-verification" element={<AiVerificationListPage />} />
-            <Route path="/ai-document-intelligence" element={<AiDocumentIntelligencePage />} />
             <Route path="/ai-verification/new" element={<AiVerificationCreatePage />} />
             <Route path="/ai-verification/:id" element={<AiVerificationDetailsPage />} />
             <Route path="/ai-verification/:id/edit" element={<AiVerificationEditPage />} />

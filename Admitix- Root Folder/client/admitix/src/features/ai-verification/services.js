@@ -23,3 +23,5 @@ export function updateAiVerification(id, payload) {
 export function deleteAiVerification(id) {
   return api.delete(`${BASE_URL}/${id}`).then((res) => res.data)
 }
+
+export const verifyAndPersistDocument=(id,file)=>{const f=new FormData();f.append('file',file);return api.post(`/ai/document-verification/${id}`,f,{headers:{'Content-Type':'multipart/form-data'}}).then(r=>r.data)}

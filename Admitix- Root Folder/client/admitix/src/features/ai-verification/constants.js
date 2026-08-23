@@ -7,7 +7,7 @@ export const AI_VERIFICATION_MODULE = {
 // Details pages for this module. Add/remove/reorder fields here —
 // every page picks them up automatically.
 export const aiVerificationFields = [
-  { name: "document_id", label: "Document", type: "select", required: true , format: "uuid", relation: "document" },
+  { name: "document_id", label: "Document ID", type: "text", required: true , format: "uuid" },
   { name: "ocr_text", label: "OCR Text", type: "textarea" },
   { name: "confidence_score", label: "Confidence Score", type: "number" },
   { name: "blur_score", label: "Blur Score", type: "number" },

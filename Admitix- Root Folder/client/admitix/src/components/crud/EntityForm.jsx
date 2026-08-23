@@ -1,8 +1,7 @@
- import { useEffect, useState } from 'react'
+ import { useState } from 'react'
 import { Save, X } from 'lucide-react'
 import FormField from './FormField'
 import { isValidUUID, normalizeUUID } from '../../utils/uuid'
-import { loadRelationOptions } from './relationOptions'
 
 export default function EntityForm({
   fields,
@@ -33,60 +32,6 @@ export default function EntityForm({
   })
 
   const [fieldErrors, setFieldErrors] = useState({})
-  const [relationOptions, setRelationOptions] = useState({})
-  const [relationLoading, setRelationLoading] = useState({})
-
-  useEffect(() => {
-    let cancelled = false
-    const relations = [...new Set(
-      fields
-        .map((field) => field.relation)
-        .filter(Boolean),
-    )]
-
-    if (relations.length === 0) {
-      setRelationOptions({})
-      setRelationLoading({})
-      return undefined
-    }
-
-    setRelationLoading(
-      Object.fromEntries(relations.map((relation) => [relation, true])),
-    )
-
-    Promise.all(
-      relations.map(async (relation) => {
-        try {
-          const options = await loadRelationOptions(relation)
-          return [relation, options]
-        } catch {
-          return [relation, []]
-        }
-      }),
-    ).then((results) => {
-      if (cancelled) return
-      setRelationOptions(Object.fromEntries(results))
-      setRelationLoading(
-        Object.fromEntries(relations.map((relation) => [relation, false])),
-      )
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [fields])
-
-  const resolvedFields = fields.map((field) => {
-    if (!field.relation) return field
-
-    return {
-      ...field,
-      type: 'select',
-      options: relationOptions[field.relation] || field.options || [],
-      loading: relationLoading[field.relation],
-      disabled: field.disabled || relationLoading[field.relation],
-    }
-  })
 
   const handleChange = (name, value) => {
     setValues((prev) => {
@@ -105,7 +50,7 @@ export default function EntityForm({
 
     const errors = {}
 
-    resolvedFields.forEach((f) => {
+    fields.forEach((f) => {
       const required =
         f.requiredOnCreate !== undefined
           ? mode === 'create'
@@ -149,7 +94,7 @@ export default function EntityForm({
 
     const normalizedValues = Object.fromEntries(
       Object.entries(values).map(([name, rawValue]) => {
-        const field = resolvedFields.find((f) => f.name === name)
+        const field = fields.find((f) => f.name === name)
 
         const required =
           field?.requiredOnCreate !== undefined
@@ -227,7 +172,7 @@ export default function EntityForm({
 
         <div className="p-5 sm:p-6">
           <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
-            {resolvedFields.map((field) => (
+            {fields.map((field) => (
               <div
                 key={field.name}
                 className={

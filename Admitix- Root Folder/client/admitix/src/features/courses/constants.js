@@ -7,8 +7,8 @@ export const COURSES_MODULE = {
 // Details pages for this module. Add/remove/reorder fields here —
 // every page picks them up automatically.
 export const coursesFields = [
-  { name: "department_id", label: "Department", type: "select", required: true , format: "uuid", relation: "department" },
-  { name: "institution_id", label: "Institution", type: "select", required: true , format: "uuid", relation: "institution" },
+  { name: "department_id", label: "Department ID", type: "text", required: true , format: "uuid" },
+  { name: "institution_id", label: "Institution ID", type: "text", required: true , format: "uuid" },
   { name: "course_name", label: "Course Name", type: "text", required: true },
   { name: "course_code", label: "Course Code", type: "text", required: true },
   { name: "duration_years", label: "Duration (Years)", type: "number", required: true },

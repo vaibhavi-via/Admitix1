@@ -5,3 +5,10 @@ dist-ssr
 .env
 .DS_Store
 *.log
+.venv/
+*.zip
+*.mp4
+*.pdf
+backend/backend/logs/*.log
+backend/.env
+client/admitix/.env

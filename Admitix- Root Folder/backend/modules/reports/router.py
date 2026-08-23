@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from backend.db.session import get_db
+from db.session import get_db
 
 from .service import (
     generate_admission_report,

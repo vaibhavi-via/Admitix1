@@ -13,6 +13,7 @@ export default function Login() {
   const [form, setForm] = useState({
     email: '',
     password: '',
+    institution_code: '',
   })
 
   const [error, setError] = useState('')
@@ -30,8 +31,8 @@ export default function Login() {
     e.preventDefault()
     setError('')
 
-    if (!form.email || !form.password) {
-      setError('Enter your email and password to continue.')
+    if (!form.email || !form.password || !form.institution_code) {
+      setError('Enter your institution code, email and password to continue.')
       return
     }
 
@@ -68,6 +69,8 @@ export default function Login() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
+
+        <div><label htmlFor="institution_code">Institution code</label><input id="institution_code" name="institution_code" value={form.institution_code} onChange={handleChange} placeholder="e.g. ABCENG" /></div>
 
         <div>
           <label htmlFor="email">
@@ -154,21 +157,7 @@ export default function Login() {
         </button>
       </form>
 
-      {/* Mock auth notice */}
-      <div className="mt-7 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-        <p className="text-[11px] leading-5 text-slate-500">
-          Development mode: mock authentication is enabled.
-        </p>
-        <p className="mt-5 text-center text-sm text-gray-500">
-          Don't have an account?{' '}
-          <a
-            href="/register"
-            className="font-semibold text-emerald-600 hover:text-emerald-700"
-          >
-            Create account
-          </a>
-        </p>
-      </div>
+<p className="mt-7 text-center text-sm text-gray-500">Don't have an account? <a href="/register" className="font-semibold text-emerald-600">Create account</a></p>
     </div>
   )
 } 

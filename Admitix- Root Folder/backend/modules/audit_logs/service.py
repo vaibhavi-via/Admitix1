@@ -33,13 +33,16 @@ def create_audit_log(db: Session, audit_log_data: AuditLogCreate) -> AuditLog:
     return audit_log
 
 
-def get_audit_logs(db: Session) -> list[AuditLog]:
+def get_audit_logs(db: Session, current_user=None) -> list[AuditLog]:
     """Return every audit log entry, most recent first."""
 
-    return db.query(AuditLog).order_by(AuditLog.created_at.desc()).all()
+    query = db.query(AuditLog)
+    if current_user is not None and current_user.institution_id is not None:
+        query = query.filter(AuditLog.institution_id == current_user.institution_id)
+    return query.order_by(AuditLog.created_at.desc()).all()
 
 
-def get_audit_log_by_id(db: Session, audit_log_id: uuid.UUID) -> AuditLog:
+def get_audit_log_by_id(db: Session, audit_log_id: uuid.UUID, current_user=None) -> AuditLog:
     """Fetch a single audit log entry by id or raise 404."""
 
     audit_log = db.query(AuditLog).filter(AuditLog.log_id == audit_log_id).first()

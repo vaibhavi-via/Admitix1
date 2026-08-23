@@ -1,9 +1,10 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 from sqlalchemy.orm import Session
 
-from backend.db.session import get_db
+from db.session import get_db
+from core.authentication import CurrentUser
 
 from .schema import (
     DocumentCreate,
@@ -16,6 +17,7 @@ from .service import (
     get_document_by_id,
     update_document,
     delete_document,
+    upload_document_file,
 )
 
 router = APIRouter(
@@ -31,9 +33,10 @@ router = APIRouter(
 )
 async def create_document_route(
     document_data: DocumentCreate,
+    current_user: CurrentUser,
     db: Session = Depends(get_db),
 ):
-    return create_document(db, document_data)
+    return create_document(db, document_data, current_user)
 
 
 @router.get(
@@ -41,9 +44,16 @@ async def create_document_route(
     response_model=list[DocumentRead],
 )
 async def get_documents_route(
+    current_user: CurrentUser,
+    application_id: UUID | None = None,
     db: Session = Depends(get_db),
 ):
-    return get_documents(db)
+    return get_documents(db, current_user, application_id)
+
+
+@router.post("/upload", response_model=DocumentRead, status_code=status.HTTP_201_CREATED)
+async def upload_document_route(current_user: CurrentUser, application_id: UUID = Form(...), document_type_id: UUID = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):
+    return await upload_document_file(db, application_id, document_type_id, file, current_user)
 
 
 @router.get(
@@ -52,9 +62,10 @@ async def get_documents_route(
 )
 async def get_document_by_id_route(
     document_id: UUID,
+    current_user: CurrentUser,
     db: Session = Depends(get_db),
 ):
-    return get_document_by_id(db, document_id)
+    return get_document_by_id(db, document_id, current_user)
 
 
 @router.patch(
@@ -64,9 +75,10 @@ async def get_document_by_id_route(
 async def update_document_route(
     document_id: UUID,
     document_data: DocumentUpdate,
+    current_user: CurrentUser,
     db: Session = Depends(get_db),
 ):
-    return update_document(db, document_id, document_data)
+    return update_document(db, document_id, document_data, current_user)
 
 
 @router.delete(
@@ -75,6 +87,7 @@ async def update_document_route(
 )
 async def delete_document_route(
     document_id: UUID,
+    current_user: CurrentUser,
     db: Session = Depends(get_db),
 ):
-    return delete_document(db, document_id)
+    return delete_document(db, document_id, current_user)

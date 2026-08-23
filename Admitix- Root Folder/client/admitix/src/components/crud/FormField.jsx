@@ -20,22 +20,6 @@ export default function FormField({
 
   const inputId = `field-${name}`
 
-  // A UUID may still exist internally for backend/API operations, but it
-  // should never be presented as a manual input to the user.
-  if (format === 'uuid' && readOnly) {
-    return (
-      <div>
-        <label htmlFor={inputId} className="mb-1.5 block text-sm font-semibold text-slate-700">
-          {label}
-        </label>
-        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-400">
-          System managed
-        </div>
-        {helpText && <p className="mt-1.5 text-xs leading-5 text-slate-400">{helpText}</p>}
-      </div>
-    )
-  }
-
   const baseInputClass = `
     w-full rounded-xl border bg-white px-3.5 py-2.5
     text-sm text-slate-900
@@ -118,7 +102,7 @@ export default function FormField({
           id={inputId}
           type={type}
           value={value ?? ''}
-          placeholder={placeholder}
+          placeholder={placeholder ?? (format === 'uuid' ? 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' : undefined)}
           disabled={readOnly || disabled}
           autoComplete={format === 'uuid' ? 'off' : undefined}
           onChange={(e) => onChange(name, e.target.value)}

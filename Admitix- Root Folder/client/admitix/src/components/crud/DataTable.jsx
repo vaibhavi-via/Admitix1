@@ -1,19 +1,53 @@
  import { Eye, Pencil, Trash2, MoreHorizontal, Copy } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { loadRelationOptions, FIELD_RELATIONS } from './relationOptions'
+import { useState } from 'react'
 import LoadingSpinner from '../LoadingSpinner'
 
-function isUUID(value) {
-  return typeof value === 'string' &&
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
-}
+function CellValue({ value, isFirstColumn }) {
+  const [copied, setCopied] = useState(false)
 
-function CellValue({ value, isFirstColumn, displayValue }) {
-  const text = String(displayValue ?? value ?? '—')
+  const text = String(value ?? '—')
 
-  // Internal UUIDs are never displayed in the UI.
-  if (isUUID(text)) {
-    return <span className="text-slate-400">—</span>
+  // UUID / long ID
+  const isLongId =
+    isFirstColumn &&
+    text.length > 20 &&
+    /^[0-9a-f-]+$/i.test(text)
+
+  const copyId = async () => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+
+      setTimeout(() => {
+        setCopied(false)
+      }, 1200)
+    } catch {
+      // Clipboard may not be available in every browser context.
+    }
+  }
+
+  if (isLongId) {
+    return (
+      <button
+        type="button"
+        onClick={copyId}
+        title={copied ? 'Copied!' : 'Copy full ID'}
+        className="group inline-flex max-w-[150px] items-center gap-1.5 text-left"
+      >
+        <span className="truncate font-mono text-xs text-slate-500 group-hover:text-emerald-600">
+          {text.slice(0, 8)}...
+        </span>
+
+        <Copy
+          size={13}
+          className={`shrink-0 transition ${
+            copied
+              ? 'text-emerald-600'
+              : 'text-slate-300 group-hover:text-emerald-500'
+          }`}
+        />
+      </button>
+    )
   }
 
   return (
@@ -41,41 +75,6 @@ export default function DataTable({
   emptyMessage = 'No records found yet.',
 }) {
   const hasActions = Boolean(onView || onEdit || onDelete)
-  const [relationMaps, setRelationMaps] = useState({})
-
-  useEffect(() => {
-    let cancelled = false
-    const relations = [...new Set(
-      columns
-        .map((column) => FIELD_RELATIONS[column.key])
-        .filter(Boolean),
-    )]
-
-    if (!relations.length) {
-      setRelationMaps({})
-      return undefined
-    }
-
-    Promise.all(
-      relations.map(async (relation) => {
-        try {
-          const options = await loadRelationOptions(relation)
-          return [
-            relation,
-            Object.fromEntries(options.map((option) => [option.value, option.label])),
-          ]
-        } catch {
-          return [relation, {}]
-        }
-      }),
-    ).then((results) => {
-      if (!cancelled) setRelationMaps(Object.fromEntries(results))
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [columns])
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
@@ -126,7 +125,7 @@ export default function DataTable({
           <table className="min-w-full table-auto text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50/70">
-                {columns.filter((col) => col.key !== 'id').map((col, index) => (
+                {columns.map((col, index) => (
                   <th
                     key={col.key}
                     className={`whitespace-nowrap px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 ${
@@ -151,7 +150,7 @@ export default function DataTable({
                   key={row[rowKey] ?? rowIndex}
                   className="group transition-colors hover:bg-emerald-50/30"
                 >
-                  {columns.filter((col) => col.key !== 'id').map((col, columnIndex) => (
+                  {columns.map((col, columnIndex) => (
                     <td
                       key={col.key}
                       className={`max-w-[240px] px-5 py-4 ${
@@ -165,11 +164,6 @@ export default function DataTable({
                       ) : (
                         <CellValue
                           value={row[col.key]}
-                          displayValue={
-                            FIELD_RELATIONS[col.key]
-                              ? relationMaps[FIELD_RELATIONS[col.key]]?.[row[col.key]]
-                              : undefined
-                          }
                           isFirstColumn={columnIndex === 0}
                         />
                       )}

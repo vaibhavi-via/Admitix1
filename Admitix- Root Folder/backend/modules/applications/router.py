@@ -3,7 +3,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from backend.db.session import get_db
+from db.session import get_db
+from core.authentication import CurrentUser
 
 from .schema import (
     ApplicationCreate,
@@ -31,9 +32,10 @@ router = APIRouter(
 )
 async def create_application_route(
     application_data: ApplicationCreate,
+    current_user: CurrentUser,
     db: Session = Depends(get_db),
 ):
-    return create_application(db, application_data)
+    return create_application(db, application_data, current_user)
 
 
 @router.get(
@@ -41,9 +43,10 @@ async def create_application_route(
     response_model=list[ApplicationRead],
 )
 async def get_applications_route(
+    current_user: CurrentUser,
     db: Session = Depends(get_db),
 ):
-    return get_applications(db)
+    return get_applications(db, current_user)
 
 
 @router.get(
@@ -52,9 +55,10 @@ async def get_applications_route(
 )
 async def get_application_by_id_route(
     application_id: UUID,
+    current_user: CurrentUser,
     db: Session = Depends(get_db),
 ):
-    return get_application_by_id(db, application_id)
+    return get_application_by_id(db, application_id, current_user)
 
 
 @router.patch(
@@ -64,9 +68,10 @@ async def get_application_by_id_route(
 async def update_application_route(
     application_id: UUID,
     application_data: ApplicationUpdate,
+    current_user: CurrentUser,
     db: Session = Depends(get_db),
 ):
-    return update_application(db, application_id, application_data)
+    return update_application(db, application_id, application_data, current_user)
 
 
 @router.delete(
@@ -75,6 +80,7 @@ async def update_application_route(
 )
 async def delete_application_route(
     application_id: UUID,
+    current_user: CurrentUser,
     db: Session = Depends(get_db),
 ):
-    return delete_application(db, application_id)
+    return delete_application(db, application_id, current_user)

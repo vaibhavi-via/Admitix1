@@ -25,7 +25,6 @@ import {
   Grid3x3,
   Wallet,
   ListChecks,
-  Sparkles,
   ChevronRight,
 } from 'lucide-react'
 import { APP_NAME } from '../utils/constants'
@@ -104,11 +103,6 @@ const NAV_GROUPS = [
         to: '/ai-verification',
         label: 'AI Verification',
         icon: ScanSearch,
-      },
-      {
-        to: '/ai-document-intelligence',
-        label: 'AI Document Intelligence',
-        icon: Sparkles,
       },
     ],
   },

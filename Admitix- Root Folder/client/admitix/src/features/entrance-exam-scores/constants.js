@@ -7,7 +7,7 @@ export const ENTRANCE_EXAM_SCORES_MODULE = {
 // Details pages for this module. Add/remove/reorder fields here —
 // every page picks them up automatically.
 export const entranceExamScoresFields = [
-  { name: "student_id", label: "Student", type: "select", required: true , format: "uuid", relation: "student" },
+  { name: "student_id", label: "Student ID", type: "text", required: true , format: "uuid" },
   { name: "exam_name", label: "Exam Name", type: "text", required: true },
   { name: "roll_number", label: "Roll Number", type: "text" },
   { name: "score", label: "Score", type: "number" },

@@ -23,12 +23,15 @@ from fastapi import HTTPException, status
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from core.config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
 from modules.institutions.models import Institution
 from modules.users.models import User
+from modules.students.models import Student
+from modules.roles.models import Role
 
-from .schema import ChangePasswordRequest, LoginRequest, RefreshTokenRequest, TokenResponse
+from .schema import ChangePasswordRequest, LoginRequest, RefreshTokenRequest, RegisterRequest, TokenResponse
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -95,6 +98,24 @@ def decode_token(token: str, expected_type: str | None = None) -> dict:
 # ---------------------------------------------------------------------------
 # Service functions
 # ---------------------------------------------------------------------------
+
+def register_student(db: Session, data: RegisterRequest) -> TokenResponse:
+    institution = db.query(Institution).filter(func.upper(Institution.institution_code) == data.institution_code.strip().upper()).first()
+    if institution is None or not institution.status:
+        raise HTTPException(status_code=400, detail="Invalid or inactive institution code.")
+    if db.query(User).filter(User.institution_id == institution.institution_id, User.email == data.email).first():
+        raise HTTPException(status_code=409, detail="An account with this email already exists for this institution.")
+    role = db.query(Role).filter(Role.role_name == "student").first()
+    if role is None:
+        role = Role(role_name="student", description="Student applicant")
+        db.add(role); db.flush()
+    user = User(institution_id=institution.institution_id, role_id=role.role_id, first_name=data.first_name.strip(), last_name=data.last_name.strip() if data.last_name else None, email=data.email, phone=data.phone, password_hash=hash_password(data.password), is_active=True)
+    db.add(user); db.flush()
+    db.add(Student(user_id=user.user_id, institution_id=institution.institution_id))
+    db.commit(); db.refresh(user)
+    return TokenResponse(access_token=create_access_token(user), refresh_token=create_refresh_token(user), expires_in=ACCESS_TOKEN_EXPIRE_MINUTES*60, user=user)
+
+
 def login_user(db: Session, login_data: LoginRequest) -> TokenResponse:
     """Authenticate a user by email (+ optional institution_code) and
     password, and issue an access/refresh token pair."""

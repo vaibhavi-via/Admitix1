@@ -1,15 +1,7 @@
 import api from '../../api/axios'
-
-// Real backend auth calls. AuthContext.jsx currently calls api.post('/auth/login', ...)
-// directly — swap those lines for these functions once you're ready to drop mock auth.
-export function loginRequest(payload) {
-  return api.post('/auth/login', payload).then((res) => res.data)
-}
-
-export function logoutRequest() {
-  return api.post('/auth/logout').then((res) => res.data)
-}
-
-export function getCurrentUser() {
-  return api.get('/auth/me').then((res) => res.data)
-}
+export const registerRequest=(payload)=>api.post('/auth/register',payload).then(r=>r.data)
+export const loginRequest=(payload)=>api.post('/auth/login',payload).then(r=>r.data)
+export const refreshTokenRequest=(refresh_token)=>api.post('/auth/refresh-token',{refresh_token}).then(r=>r.data)
+export const logoutRequest=()=>api.post('/auth/logout').then(r=>r.data)
+export const getCurrentUser=()=>api.get('/auth/me').then(r=>r.data)
+export const changePasswordRequest=(payload)=>api.post('/auth/change-password',payload).then(r=>r.data)

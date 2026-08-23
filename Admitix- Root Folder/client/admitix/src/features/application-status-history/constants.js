@@ -7,9 +7,9 @@ export const APPLICATION_STATUS_HISTORY_MODULE = {
 // Details pages for this module. Add/remove/reorder fields here —
 // every page picks them up automatically.
 export const applicationStatusHistoryFields = [
-  { name: "application_id", label: "Application", type: "select", required: true , format: "uuid", relation: "application" },
+  { name: "application_id", label: "Application ID", type: "text", required: true , format: "uuid" },
   { name: "old_status", label: "Old Status", type: "text" },
   { name: "new_status", label: "New Status", type: "text", required: true },
-  { name: "changed_by", label: "Changed By", type: "select" , format: "uuid", relation: "user" },
+  { name: "changed_by", label: "Changed By (User ID)", type: "text" , format: "uuid" },
   { name: "remarks", label: "Remarks", type: "textarea" }
 ]
