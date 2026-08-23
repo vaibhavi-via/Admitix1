@@ -70,7 +70,20 @@ export default function Login() {
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
 
-        <div><label htmlFor="institution_code">Institution code</label><input id="institution_code" name="institution_code" value={form.institution_code} onChange={handleChange} placeholder="e.g. ABCENG" /></div>
+        <div>
+          <label htmlFor="institution_code">Institution code</label>
+          <input
+            id="institution_code"
+            name="institution_code"
+            value={form.institution_code}
+            onChange={handleChange}
+            placeholder="e.g. ABCENG"
+            autoComplete="off"
+          />
+          <p className="mt-1.5 text-xs leading-5 text-slate-400">
+            The unique code your institution was registered with.
+          </p>
+        </div>
 
         <div>
           <label htmlFor="email">

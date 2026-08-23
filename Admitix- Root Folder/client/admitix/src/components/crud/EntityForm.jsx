@@ -2,9 +2,10 @@
 import { Save, X } from 'lucide-react'
 import FormField from './FormField'
 import { isValidUUID, normalizeUUID } from '../../utils/uuid'
+import useAutoRelationFields from '../../hooks/useAutoRelationFields'
 
 export default function EntityForm({
-  fields,
+  fields: rawFields,
   initialValues = {},
   onSubmit,
   onCancel,
@@ -14,10 +15,17 @@ export default function EntityForm({
   mode = 'create',
   onValuesChange,
 }) {
+  // Any field whose name is a recognized foreign key (student_id,
+  // course_id, reviewed_by, ...) is automatically upgraded from a
+  // raw-UUID text box into a searchable dropdown of real records —
+  // pages that already wire their own filtered options (Departments,
+  // Faculties) are left untouched. See useAutoRelationFields.js.
+  const { fields } = useAutoRelationFields(rawFields)
+
   const [values, setValues] = useState(() => {
     const base = {}
 
-    fields.forEach((f) => {
+    rawFields.forEach((f) => {
       const incoming = initialValues[f.name]
 
       base[f.name] =
@@ -161,7 +169,7 @@ export default function EntityForm({
           <h2 className="text-sm font-bold text-slate-800">
             {mode === 'edit'
               ? 'Edit information'
-              : 'Institution information'}
+              : 'Record information'}
           </h2>
 
           <p className="mt-1 text-xs text-slate-400">

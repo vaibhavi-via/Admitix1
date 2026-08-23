@@ -8,6 +8,13 @@ const RELATIONS = {
       ? `${item.institution_name}${item.institution_code ? ` (${item.institution_code})` : ''}`
       : (item.name || item.email || 'Institution'),
   },
+  domain: {
+    endpoint: '/domains',
+    idKeys: ['domain_id', 'id'],
+    label: (item) => item.domain_name
+      ? `${item.domain_name}${item.domain_code ? ` (${item.domain_code})` : ''}`
+      : (item.name || 'Domain'),
+  },
   faculty: {
     endpoint: '/faculties',
     idKeys: ['faculty_id', 'id'],
@@ -81,6 +88,7 @@ const RELATIONS = {
 
 const FIELD_RELATIONS = {
   institution_id: 'institution',
+  domain_id: 'domain',
   faculty_id: 'faculty',
   department_id: 'department',
   hod_staff_id: 'staff',
@@ -93,6 +101,12 @@ const FIELD_RELATIONS = {
   document_type_id: 'documentType',
   document_id: 'document',
   fee_id: 'fee',
+  // Foreign keys that don't follow the `<name>_id` convention but
+  // still reference `users.user_id` — reuse the `user` relation so
+  // these render as searchable dropdowns too, instead of raw UUIDs.
+  reviewed_by: 'user',
+  verified_by: 'user',
+  changed_by: 'user',
 }
 
 function getId(item, relation) {

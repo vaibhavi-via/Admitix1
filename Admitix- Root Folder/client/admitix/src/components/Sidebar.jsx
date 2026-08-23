@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
   Settings,
@@ -144,6 +145,31 @@ const NAV_GROUPS = [
 ]
 
 export default function Sidebar({ open, onClose }) {
+  const location = useLocation()
+
+  // Which group contains the currently active route — used both to
+  // auto-expand that group on navigation and as the default open
+  // group on first render, so users always land somewhere useful.
+  const activeGroupLabel = useMemo(() => {
+    const match = NAV_GROUPS.find((group) =>
+      group.items.some((item) => location.pathname.startsWith(item.to)),
+    )
+    return match?.label ?? NAV_GROUPS[0].label
+  }, [location.pathname])
+
+  // Collapsible groups keep the sidebar short: only one section's
+  // links are visible at a time by default, instead of every single
+  // link across every module being rendered at once.
+  const [expandedLabel, setExpandedLabel] = useState(activeGroupLabel)
+
+  useEffect(() => {
+    setExpandedLabel(activeGroupLabel)
+  }, [activeGroupLabel])
+
+  const toggleGroup = (label) => {
+    setExpandedLabel((current) => (current === label ? null : label))
+  }
+
   return (
     <>
       {/* Mobile overlay */}
@@ -181,67 +207,92 @@ export default function Sidebar({ open, onClose }) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-5">
-          <div className="space-y-6">
-            {NAV_GROUPS.map((group) => (
-              <div key={group.label}>
-                <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-200/40">
-                  {group.label}
-                </p>
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
+          <div className="space-y-1">
+            {NAV_GROUPS.map((group) => {
+              const isExpanded = expandedLabel === group.label
+              const isGroupActive = group.items.some((item) =>
+                location.pathname.startsWith(item.to),
+              )
 
-                <div className="space-y-1">
-                  {group.items.map(({ to, label, icon: Icon }) => (
-                    <NavLink
-                      key={to}
-                      to={to}
-                      onClick={onClose}
-                      className={({ isActive }) =>
-                        `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200 ${
-                          isActive
-                            ? 'bg-emerald-500/15 text-white'
-                            : 'text-slate-400 hover:bg-white/[0.06] hover:text-white'
-                        }`
-                      }
-                    >
-                      {({ isActive }) => (
-                        <>
-                          {/* Green active bar */}
-                          {isActive && (
-                            <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-emerald-400" />
-                          )}
+              return (
+                <div key={group.label}>
+                  {/* Group header — click to expand/collapse (dropdown) */}
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(group.label)}
+                    aria-expanded={isExpanded}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.14em] transition ${
+                      isGroupActive
+                        ? 'text-emerald-300'
+                        : 'text-emerald-200/40 hover:text-emerald-200/70'
+                    }`}
+                  >
+                    {group.label}
 
-                          {/* Icon */}
-                          <span
-                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition ${
-                              isActive
-                                ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
-                                : 'bg-white/[0.04] text-slate-500 group-hover:bg-emerald-500/10 group-hover:text-emerald-300'
-                            }`}
+                    <ChevronRight
+                      size={13}
+                      className={`shrink-0 transition-transform duration-200 ${
+                        isExpanded ? 'rotate-90' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {/* Group links */}
+                  <div
+                    className={`grid transition-all duration-200 ease-out ${
+                      isExpanded
+                        ? 'grid-rows-[1fr] opacity-100'
+                        : 'grid-rows-[0fr] opacity-0'
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="space-y-1 pb-2 pt-1">
+                        {group.items.map(({ to, label, icon: Icon }) => (
+                          <NavLink
+                            key={to}
+                            to={to}
+                            onClick={onClose}
+                            className={({ isActive }) =>
+                              `group relative flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-200 ${
+                                isActive
+                                  ? 'bg-emerald-500/15 text-white'
+                                  : 'text-slate-400 hover:bg-white/[0.06] hover:text-white'
+                              }`
+                            }
                           >
-                            <Icon size={16} strokeWidth={1.8} />
-                          </span>
+                            {({ isActive }) => (
+                              <>
+                                {/* Green active bar */}
+                                {isActive && (
+                                  <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-emerald-400" />
+                                )}
 
-                          {/* Label */}
-                          <span className="min-w-0 flex-1 truncate">
-                            {label}
-                          </span>
+                                {/* Icon */}
+                                <span
+                                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${
+                                    isActive
+                                      ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
+                                      : 'bg-white/[0.04] text-slate-500 group-hover:bg-emerald-500/10 group-hover:text-emerald-300'
+                                  }`}
+                                >
+                                  <Icon size={15} strokeWidth={1.8} />
+                                </span>
 
-                          {/* Arrow */}
-                          <ChevronRight
-                            size={14}
-                            className={`shrink-0 transition-all ${
-                              isActive
-                                ? 'text-emerald-300 opacity-100'
-                                : 'text-slate-600 opacity-0 group-hover:translate-x-0.5 group-hover:opacity-100'
-                            }`}
-                          />
-                        </>
-                      )}
-                    </NavLink>
-                  ))}
+                                {/* Label */}
+                                <span className="min-w-0 flex-1 truncate">
+                                  {label}
+                                </span>
+                              </>
+                            )}
+                          </NavLink>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </nav>
 
@@ -279,18 +330,8 @@ export default function Sidebar({ open, onClose }) {
               </>
             )}
           </NavLink>
-
-          <div className="mt-3 rounded-xl border border-emerald-400/10 bg-emerald-400/[0.04] px-3 py-2.5">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400/60">
-              Admitix
-            </p>
-
-            <p className="mt-1 text-[11px] text-slate-500">
-              Administration System
-            </p>
-          </div>
         </div>
       </aside>
     </>
   )
-} 
+}

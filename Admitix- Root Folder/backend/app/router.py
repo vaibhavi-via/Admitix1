@@ -15,6 +15,7 @@ from modules.courses.extra_router import fee_router, seat_router
 from modules.dashboard.router import router as dashboard_router
 from modules.departments.router import router as departments_router
 from modules.document_types.router import router as document_types_router
+from modules.domains.router import router as domains_router
 from modules.documents.router import router as documents_router
 from modules.educational_details.router import router as educational_details_router
 from modules.entrance_exam_scores.router import router as entrance_exam_scores_router
@@ -44,6 +45,7 @@ api_router.include_router(seat_router, dependencies=[Depends(get_current_user)])
 api_router.include_router(dashboard_router, dependencies=[Depends(get_current_user)])
 api_router.include_router(departments_router, dependencies=[Depends(get_current_user)])
 api_router.include_router(document_types_router, dependencies=[Depends(get_current_user)])
+api_router.include_router(domains_router, dependencies=[Depends(get_current_user)])
 api_router.include_router(documents_router, dependencies=[Depends(get_current_user)])
 api_router.include_router(educational_details_router, dependencies=[Depends(get_current_user)])
 api_router.include_router(entrance_exam_scores_router, dependencies=[Depends(get_current_user)])

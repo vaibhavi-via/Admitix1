@@ -5,3 +5,10 @@
 2026-08-12 11:34:33,505 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
 2026-08-12 12:14:08,909 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix API
 2026-08-12 12:16:56,301 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix API
+2026-08-23 12:25:16,493 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix
+2026-08-23 12:33:41,542 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix
+2026-08-23 12:44:03,567 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix
+2026-08-23 12:49:40,943 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix
+2026-08-23 12:50:48,161 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix
+2026-08-23 19:06:01,849 | INFO     | StudentManagementAPI | lifespan.py:23 | Starting Admitix
+2026-08-23 19:54:29,599 | INFO     | StudentManagementAPI | lifespan.py:29 | Stopped Admitix

@@ -9,6 +9,7 @@ export const INSTITUTIONS_MODULE = {
 export const institutionsFields = [
   { name: "institution_name", label: "Institution Name", type: "text", required: true },
   { name: "institution_code", label: "Institution Code", type: "text", required: true },
+  { name: "domain_id", label: "Domain", type: "select", placeholder: "Select domain (Engineering, Medical, Law, Pharmacy...)" },
   { name: "email", label: "Email", type: "email", required: true },
   { name: "phone", label: "Phone", type: "text" },
   { name: "address", label: "Address", type: "textarea" },

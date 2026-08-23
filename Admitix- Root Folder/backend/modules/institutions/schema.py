@@ -18,6 +18,7 @@ class InstitutionBase(BaseModel):
     state: str | None = Field(None, max_length=100)
     country: str = Field("India", max_length=100)
     logo_url: str | None = None
+    domain_id: uuid.UUID | None = None
     status: bool = True
 
 
@@ -37,6 +38,7 @@ class InstitutionUpdate(BaseModel):
     state: str | None = Field(None, max_length=100)
     country: str | None = Field(None, max_length=100)
     logo_url: str | None = None
+    domain_id: uuid.UUID | None = None
     status: bool | None = None
 
 

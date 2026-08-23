@@ -5,13 +5,27 @@ import LoadingSpinner from '../LoadingSpinner'
 function CellValue({ value, isFirstColumn }) {
   const [copied, setCopied] = useState(false)
 
+  // Booleans render as readable status pills instead of "true"/"false".
+  if (typeof value === 'boolean') {
+    return (
+      <span
+        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+          value
+            ? 'bg-emerald-50 text-emerald-700'
+            : 'bg-slate-100 text-slate-500'
+        }`}
+      >
+        {value ? 'Yes' : 'No'}
+      </span>
+    )
+  }
+
   const text = String(value ?? '—')
 
-  // UUID / long ID
-  const isLongId =
-    isFirstColumn &&
-    text.length > 20 &&
-    /^[0-9a-f-]+$/i.test(text)
+  // UUID / long ID — never show a raw UUID to the user, on any
+  // column, not just the row identifier. They can still copy the
+  // full value if they genuinely need it (e.g. for support/debugging).
+  const isLongId = text.length > 20 && /^[0-9a-f-]+$/i.test(text)
 
   const copyId = async () => {
     try {

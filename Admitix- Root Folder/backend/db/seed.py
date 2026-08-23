@@ -19,12 +19,20 @@ from sqlalchemy.orm import Session
 
 from core.security import hash_password
 from db.session import SessionLocal
+from modules.domains.models import Domain
 from modules.roles.models import Role
 from modules.users.models import User
 
 # ==========================================================
 # Reference Data
 # ==========================================================
+
+DOMAIN_DEFS = [
+    ("ENG", "Engineering", None),
+    ("MED", "Medical", None),
+    ("LAW", "Law", None),
+    ("PHARM", "Pharmacy", None),
+]
 
 ROLE_NAMES = [
     ("super_admin", "Platform-level super administrator"),
@@ -45,6 +53,21 @@ SUPER_ADMIN_PASSWORD = "ChangeMe123!"
 # ==========================================================
 # Seed Functions
 # ==========================================================
+
+def seed_domains(db: Session) -> dict[str, Domain]:
+    """Insert any missing domains from DOMAIN_DEFS. Returns code -> Domain map."""
+
+    existing = {domain.domain_code: domain for domain in db.query(Domain).all()}
+
+    for code, name, description in DOMAIN_DEFS:
+        if code not in existing:
+            domain = Domain(domain_code=code, domain_name=name, description=description)
+            db.add(domain)
+            existing[code] = domain
+
+    db.flush()
+    return existing
+
 
 def seed_roles(db: Session) -> dict[str, Role]:
     """Insert any missing roles from ROLE_NAMES. Returns name -> Role map."""
@@ -93,6 +116,7 @@ def seed_super_admin(db: Session, roles: dict[str, Role]) -> None:
 def run_seed() -> None:
     db = SessionLocal()
     try:
+        seed_domains(db)
         roles = seed_roles(db)
         seed_super_admin(db, roles)
         db.commit()

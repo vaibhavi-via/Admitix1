@@ -64,6 +64,7 @@ if TYPE_CHECKING:
     from modules.departments.models import Department
     from modules.document_types.models import DocumentType
     from modules.documents.models import Document
+    from modules.domains.models import Domain
     from modules.faculties.models import Faculty
     from modules.institutions.models import Institution
     from modules.notifications.models import Notification
@@ -87,6 +88,7 @@ _MODEL_IMPORTS = {
     "Department": "modules.departments.models",
     "DocumentType": "modules.document_types.models",
     "Document": "modules.documents.models",
+    "Domain": "modules.domains.models",
     "Faculty": "modules.faculties.models",
     "Institution": "modules.institutions.models",
     "Notification": "modules.notifications.models",
@@ -123,6 +125,7 @@ __all__ = [
     "Department",
     "DocumentType",
     "Document",
+    "Domain",
     "Faculty",
     "Institution",
     "Notification",

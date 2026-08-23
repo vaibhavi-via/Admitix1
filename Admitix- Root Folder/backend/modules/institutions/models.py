@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, List
 
-from sqlalchemy import Boolean, DateTime, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from modules.audit_logs.models import AuditLog
     from modules.courses.models import Course
     from modules.departments.models import Department
+    from modules.domains.models import Domain
     from modules.faculties.models import Faculty
     from modules.students.models import Student
     from modules.users.models import Staff, User
@@ -47,6 +48,11 @@ class Institution(Base):
         String(100), nullable=False, server_default="India"
     )
     logo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    domain_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("domains.domain_id", ondelete="RESTRICT"),
+        nullable=True,
+    )
     status: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=func.true()
     )
@@ -61,6 +67,9 @@ class Institution(Base):
     )
 
     # -- relationships ----------------------------------------------------
+    domain: Mapped["Domain | None"] = relationship(
+        "Domain", back_populates="institutions"
+    )
     faculties: Mapped[List["Faculty"]] = relationship(
         "Faculty", back_populates="institution", passive_deletes=True
     )

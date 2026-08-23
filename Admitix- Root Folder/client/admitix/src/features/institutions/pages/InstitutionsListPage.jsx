@@ -13,6 +13,7 @@ import DataTable from '../../../components/crud/DataTable'
 import ConfirmDialog from '../../../components/crud/ConfirmDialog'
 import { getInstitutionsList, deleteInstitution } from '../services'
 import { institutionsFields } from '../constants'
+import { loadRelationOptions } from '../../../components/crud/relationOptions'
 
 export default function InstitutionsListPage() {
   const navigate = useNavigate()
@@ -22,6 +23,7 @@ export default function InstitutionsListPage() {
   const [error, setError] = useState('')
   const [pendingDelete, setPendingDelete] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [domainLabels, setDomainLabels] = useState({})
 
   const [search, setSearch] = useState('')
   const [showFilters, setShowFilters] = useState(false)
@@ -42,14 +44,47 @@ export default function InstitutionsListPage() {
 
   useEffect(load, [])
 
+  // Resolve domain_id -> "Engineering (ENG)" once, so the table shows
+  // a readable domain name/badge instead of a raw foreign-key UUID.
+  useEffect(() => {
+    loadRelationOptions('domain')
+      .then((options) => {
+        const map = {}
+        options.forEach((opt) => {
+          map[opt.value] = opt.label
+        })
+        setDomainLabels(map)
+      })
+      .catch(() => {
+        // Non-fatal: the domain column just falls back to the raw
+        // (truncated) id if the lookup fails.
+      })
+  }, [])
+
   const columns = [
     ...institutionsFields
       .filter((f) => f.type !== 'textarea' && f.type !== 'password')
       .slice(0, 5)
-      .map((f) => ({
-        key: f.name,
-        label: f.label,
-      })),
+      .map((f) => {
+        if (f.name === 'domain_id') {
+          return {
+            key: f.name,
+            label: 'Domain',
+            render: (row) => {
+              const label = domainLabels[row.domain_id]
+              if (!label) {
+                return <span className="text-slate-400">—</span>
+              }
+              return (
+                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                  {label}
+                </span>
+              )
+            },
+          }
+        }
+        return { key: f.name, label: f.label }
+      }),
   ]
 
   const filteredRows = rows.filter((row) => {

@@ -37,6 +37,26 @@ CREATE TABLE roles (
 COMMENT ON TABLE roles IS 'RBAC roles: super_admin, institution_admin, admission_officer, department_reviewer, finance_officer, registrar, faculty, student, guardian.';
 
 -- =====================================================================
+-- 1.1 DOMAINS
+-- =====================================================================
+CREATE TABLE domains (
+    domain_id     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    domain_code   VARCHAR(20)  NOT NULL,
+    domain_name   VARCHAR(100) NOT NULL,
+    description   TEXT,
+    status        BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT uq_domains_code UNIQUE (domain_code),
+    CONSTRAINT uq_domains_name UNIQUE (domain_name)
+);
+
+INSERT INTO domains (domain_code, domain_name) VALUES
+('ENG',   'Engineering'),
+('MED',   'Medical'),
+('LAW',   'Law'),
+('PHARM', 'Pharmacy');
+
+-- =====================================================================
 -- 2. INSTITUTIONS (tenants)
 -- =====================================================================
 CREATE TABLE institutions (
@@ -687,6 +707,49 @@ CREATE TABLE chat_history (
 CREATE INDEX idx_chat_history_student_id ON chat_history (student_id);
 
 COMMIT;
+
+ALTER USER postgres WITH PASSWORD 'Vaibhavi1122';
+
+ ALTER TABLE institutions
+    ADD COLUMN domain_id UUID REFERENCES domains (domain_id) ON DELETE RESTRICT;
+
+CREATE INDEX idx_institutions_domain_id ON institutions (domain_id);
+
+SELECT institution_id, institution_name FROM institutions;
+
+UPDATE institutions
+SET domain_id = (SELECT domain_id FROM domains WHERE domain_code = 'ENG')
+WHERE institution_name ILIKE '%engineering%';
+
+UPDATE institutions
+SET domain_id = (SELECT domain_id FROM domains WHERE domain_code = 'MED')
+WHERE institution_name ILIKE '%medical%';
+
+UPDATE institutions
+SET domain_id = (SELECT domain_id FROM domains WHERE domain_code = 'LAW')
+WHERE institution_name ILIKE '%law%';
+
+UPDATE institutions
+SET domain_id = (SELECT domain_id FROM domains WHERE domain_code = 'PHARM')
+WHERE institution_name ILIKE '%pharm%';
+
+SELECT institution_id, institution_name FROM institutions WHERE domain_id IS NULL;
+
+ALTER TABLE institutions
+    ALTER COLUMN domain_id SET NOT NULL;
+
+ALTER TABLE institutions ALTER COLUMN domain_id DROP NOT NULL;
+
+ALTER TABLE applications
+ADD COLUMN assigned_staff_id UUID
+REFERENCES staff(staff_id)
+ON DELETE SET NULL;
+
+CREATE INDEX idx_applications_assigned_staff
+ON applications (assigned_staff_id);
+
+ 
+
 
 -- =====================================================================
 -- END OF SCHEMA
