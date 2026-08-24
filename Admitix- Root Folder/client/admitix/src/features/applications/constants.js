@@ -12,6 +12,7 @@ export const applicationsFields = [
   { name: "application_number", label: "Application Number", type: "text", readOnly: true, helpText: "Generated automatically by the backend." },
   { name: "submission_date", label: "Submission Date", type: "date", readOnly: true },
   { name: "current_status", label: "Current Status", type: "select", options: ["draft", "submitted", "under_review", "documents_pending", "approved", "rejected", "admitted", "cancelled"] },
+  { name: "assigned_staff_id", label: "Assigned Admission Officer", type: "text", format: "uuid" },
   { name: "reviewed_by", label: "Reviewed By (User ID)", type: "text" , format: "uuid" },
   { name: "remarks", label: "Remarks", type: "textarea" }
 ]

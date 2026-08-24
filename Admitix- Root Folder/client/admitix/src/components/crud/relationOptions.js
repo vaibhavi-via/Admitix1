@@ -104,6 +104,7 @@ const FIELD_RELATIONS = {
   // Foreign keys that don't follow the `<name>_id` convention but
   // still reference `users.user_id` — reuse the `user` relation so
   // these render as searchable dropdowns too, instead of raw UUIDs.
+  assigned_staff_id: 'staff',
   reviewed_by: 'user',
   verified_by: 'user',
   changed_by: 'user',

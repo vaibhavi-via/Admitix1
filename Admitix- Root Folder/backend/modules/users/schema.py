@@ -49,6 +49,9 @@ class UserRead(UserBase):
     last_login: datetime | None
     created_at: datetime
     updated_at: datetime
+    role_name: str | None = None
+    student_id: uuid.UUID | None = None
+    staff_id: uuid.UUID | None = None
 
 
 # ---------------------------------------------------------------------------

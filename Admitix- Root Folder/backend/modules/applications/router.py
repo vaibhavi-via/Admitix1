@@ -17,6 +17,7 @@ from .service import (
     get_application_by_id,
     update_application,
     delete_application,
+    assign_application,
 )
 
 router = APIRouter(
@@ -84,3 +85,16 @@ async def delete_application_route(
     db: Session = Depends(get_db),
 ):
     return delete_application(db, application_id, current_user)
+
+
+@router.patch(
+    "/{application_id}/assign/{staff_id}",
+    response_model=ApplicationRead,
+)
+async def assign_application_route(
+    application_id: UUID,
+    staff_id: UUID,
+    current_user: CurrentUser,
+    db: Session = Depends(get_db),
+):
+    return assign_application(db, application_id, staff_id, current_user)

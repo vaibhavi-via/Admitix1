@@ -1,0 +1,21 @@
+
+import api from '../../../api/axios'
+export const getStudent=(id)=>api.get(`/students/${id}`).then(r=>r.data)
+export const updateStudent=(id,p)=>api.patch(`/students/${id}`,p).then(r=>r.data)
+export const getApplications=()=>api.get('/applications/').then(r=>r.data)
+export const createApplication=(p)=>api.post('/applications/',p).then(r=>r.data)
+export const updateApplication=(id,p)=>api.patch(`/applications/${id}`,p).then(r=>r.data)
+export const getCycles=()=>api.get('/admission-cycles/').then(r=>r.data)
+export const getEducation=(studentId)=>api.get('/educational-details/',{params:{student_id:studentId}}).then(r=>r.data)
+export const createEducation=(p)=>api.post('/educational-details/',p).then(r=>r.data)
+export const updateEducation=(id,p)=>api.patch(`/educational-details/${id}`,p).then(r=>r.data)
+export const getExam=(studentId)=>api.get('/entrance-exam-scores/',{params:{student_id:studentId}}).then(r=>r.data)
+export const createExam=(p)=>api.post('/entrance-exam-scores/',p).then(r=>r.data)
+export const updateExam=(id,p)=>api.patch(`/entrance-exam-scores/${id}`,p).then(r=>r.data)
+export const getPreferences=(applicationId)=>api.get('/application-preferences/',{params:{application_id:applicationId}}).then(r=>r.data)
+export const createPreference=(p)=>api.post('/application-preferences/',p).then(r=>r.data)
+export const updatePreference=(id,p)=>api.patch(`/application-preferences/${id}`,p).then(r=>r.data)
+export const getCourses=()=>api.get('/courses/').then(r=>r.data)
+export const getDocuments=(applicationId)=>api.get('/documents/',{params:{application_id:applicationId}}).then(r=>r.data)
+export const getDocumentTypes=()=>api.get('/document-types/').then(r=>r.data)
+export const uploadDocument=(applicationId,documentTypeId,file)=>{const f=new FormData();f.append('application_id',applicationId);f.append('document_type_id',documentTypeId);f.append('file',file);return api.post('/documents/upload',f,{headers:{'Content-Type':'multipart/form-data'}}).then(r=>r.data)}

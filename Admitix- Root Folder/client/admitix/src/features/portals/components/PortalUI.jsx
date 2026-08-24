@@ -1,0 +1,8 @@
+
+import { LoaderCircle } from 'lucide-react'
+export function Loading(){return <div className="flex min-h-[240px] items-center justify-center text-slate-400"><LoaderCircle className="animate-spin" size={24}/></div>}
+export function ErrorBox({message}){return message ? <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{message}</div> : null}
+export function Card({children,className=''}){return <div className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ${className}`}>{children}</div>}
+export function Badge({status}){const s=String(status||'').toLowerCase();const cls=s.includes('approved')||s==='verified'||s==='admitted'?'bg-emerald-50 text-emerald-700':s.includes('reject')?'bg-red-50 text-red-700':s.includes('pending')||s==='under_review'?'bg-amber-50 text-amber-700':'bg-slate-100 text-slate-600';return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${cls}`}>{s.replaceAll('_',' ')||'draft'}</span>}
+export function Button({children, ...props}){return <button {...props} className={`inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 ${props.className||''}`}>{children}</button>}
+export function Field({label,...props}){return <label className="block"><span className="mb-1.5 block text-xs font-semibold text-slate-600">{label}</span><input {...props} className={`w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 ${props.className||''}`}/></label>}

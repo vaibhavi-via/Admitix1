@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from modules.institutions.models import Institution
     from modules.payments.models import Payment
     from modules.students.models import Student
-    from modules.users.models import User
+    from modules.users.models import User, Staff
 
 
 class Application(Base):
@@ -90,6 +90,12 @@ class Application(Base):
         nullable=True,
         index=True,
     )
+    assigned_staff_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("staff.staff_id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     remarks: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -102,6 +108,9 @@ class Application(Base):
     )
     reviewer: Mapped["User | None"] = relationship(
         "User", back_populates="reviewed_applications", foreign_keys=[reviewed_by]
+    )
+    assigned_staff: Mapped["Staff | None"] = relationship(
+        "Staff", back_populates="assigned_applications", foreign_keys=[assigned_staff_id]
     )
     preferences: Mapped[List["ApplicationPreference"]] = relationship(
         "ApplicationPreference", back_populates="application", cascade="all, delete-orphan"

@@ -20,9 +20,9 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from core.enums import ApplicationCurrentStatus
-from core.authorization import require_same_institution, role_name
+from core.authorization import require_same_institution, role_name, require_roles
 from modules.students.models import Student
-from modules.users.models import User
+from modules.users.models import User, Staff
 from .models import Application, ApplicationStatusHistory
 from .schema import ApplicationCreate, ApplicationUpdate
 
@@ -77,13 +77,18 @@ def create_application(db: Session, application_data: ApplicationCreate, current
 
 
 def get_applications(db: Session, current_user: User) -> list[Application]:
-    """Return every application."""
-
     query = db.query(Application).join(Student, Application.student_id == Student.student_id)
-    if current_user.institution_id is not None: query = query.filter(Student.institution_id == current_user.institution_id)
-    if role_name(current_user) == "student": query = query.filter(Student.user_id == current_user.user_id)
+    if current_user.institution_id is not None:
+        query = query.filter(Student.institution_id == current_user.institution_id)
+    role = role_name(current_user)
+    if role == "student":
+        query = query.filter(Student.user_id == current_user.user_id)
+    elif role in {"admission_officer", "department_reviewer"}:
+        staff = db.query(Staff).filter(Staff.user_id == current_user.user_id).first()
+        if staff is None:
+            return []
+        query = query.filter(Application.assigned_staff_id == staff.staff_id)
     return query.order_by(Application.created_at.desc()).all()
-
 
 def get_application_by_id(db: Session, application_id: uuid.UUID, current_user: User) -> Application:
     """Fetch a single application by id or raise 404."""
@@ -111,21 +116,41 @@ def update_application(
     application_data: ApplicationUpdate,
     current_user: User,
 ) -> Application:
-    """Partially update an application.
-
-    If `current_status` changes, records the transition in
-    `ApplicationStatusHistory` alongside `reviewed_by`/`remarks` if
-    they were supplied in the same request.
-    """
-
     application = get_application_by_id(db, application_id, current_user)
-
     update_data = application_data.model_dump(exclude_unset=True)
-    incoming_status: ApplicationCurrentStatus | None = update_data.get("current_status")
+    incoming_status = update_data.get("current_status")
+    role = role_name(current_user)
+
+    if role == "student":
+        if set(update_data) - {"current_status", "remarks"}:
+            raise HTTPException(status_code=403, detail="Students cannot modify staff review fields.")
+        if incoming_status not in (None, ApplicationCurrentStatus.SUBMITTED):
+            raise HTTPException(status_code=403, detail="Students can only submit an application.")
+    elif role in {"admission_officer", "department_reviewer"}:
+        staff = db.query(Staff).filter(Staff.user_id == current_user.user_id).first()
+        if staff is None or application.assigned_staff_id != staff.staff_id:
+            raise HTTPException(status_code=403, detail="This application is not assigned to you.")
+        if "assigned_staff_id" in update_data or "reviewed_by" in update_data:
+            raise HTTPException(status_code=403, detail="Staff cannot reassign applications.")
+        if incoming_status is not None and incoming_status.value not in {
+            "under_review", "documents_pending", "approved", "rejected", "admitted"
+        }:
+            raise HTTPException(status_code=403, detail="Invalid status for an admission officer.")
+        update_data["reviewed_by"] = current_user.user_id
+    elif role not in {"institution_admin", "super_admin", "admin"}:
+        raise HTTPException(status_code=403, detail="Insufficient permissions.")
+
+    if "assigned_staff_id" in update_data:
+        staff_id = update_data["assigned_staff_id"]
+        if staff_id is not None:
+            staff = db.query(Staff).filter(Staff.staff_id == staff_id).first()
+            if staff is None:
+                raise HTTPException(status_code=404, detail="Staff member not found.")
+            require_same_institution(current_user, staff.institution_id)
+            if application.student.institution_id != staff.institution_id:
+                raise HTTPException(status_code=403, detail="Staff and application must belong to the same institution.")
 
     old_status = application.current_status.value
-    if role_name(current_user) == "student" and incoming_status not in (None, ApplicationCurrentStatus.SUBMITTED): raise HTTPException(status_code=403, detail="Students can only submit an application.")
-
     for field, value in update_data.items():
         setattr(application, field, value)
 
@@ -139,13 +164,36 @@ def update_application(
         )
         db.add(history)
         from modules.audit_logs.models import AuditLog
-        db.add(AuditLog(user_id=current_user.user_id, action="STATUS_CHANGE", table_name="applications", record_id=application.application_id))
+        db.add(AuditLog(
+            user_id=current_user.user_id,
+            action="STATUS_CHANGE",
+            table_name="applications",
+            record_id=application.application_id,
+        ))
 
     db.commit()
     db.refresh(application)
-
     return application
 
+
+def assign_application(
+    db: Session,
+    application_id: uuid.UUID,
+    staff_id: uuid.UUID,
+    current_user: User,
+) -> Application:
+    require_roles(current_user, "institution_admin", "super_admin", "admin")
+    application = get_application_by_id(db, application_id, current_user)
+    staff = db.query(Staff).filter(Staff.staff_id == staff_id).first()
+    if staff is None:
+        raise HTTPException(status_code=404, detail="Staff member not found.")
+    require_same_institution(current_user, staff.institution_id)
+    if application.student.institution_id != staff.institution_id:
+        raise HTTPException(status_code=403, detail="Staff and application must belong to the same institution.")
+    application.assigned_staff_id = staff.staff_id
+    db.commit()
+    db.refresh(application)
+    return application
 
 def delete_application(db: Session, application_id: uuid.UUID, current_user: User) -> None:
     """Delete an application (cascades to preferences, status history,

@@ -32,6 +32,7 @@ class ApplicationCreate(BaseModel):
 class ApplicationUpdate(BaseModel):
     current_status: ApplicationCurrentStatus | None = None
     reviewed_by: uuid.UUID | None = None
+    assigned_staff_id: uuid.UUID | None = None
     remarks: str | None = None
 
 
@@ -42,6 +43,7 @@ class ApplicationRead(ApplicationBase):
     student_id: uuid.UUID
     cycle_id: uuid.UUID
     reviewed_by: uuid.UUID | None
+    assigned_staff_id: uuid.UUID | None
     submission_date: datetime
     created_at: datetime
 

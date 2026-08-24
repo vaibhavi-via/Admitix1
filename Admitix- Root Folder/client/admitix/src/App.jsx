@@ -8,6 +8,18 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
+import { RoleRoute, RoleLanding } from './routes/RoleRoute'
+import PortalLayout from './features/portals/components/PortalLayout'
+import StudentDashboardPage from './features/portals/student/StudentDashboardPage'
+import StudentProfilePage from './features/portals/student/StudentProfilePage'
+import StudentEducationPage from './features/portals/student/StudentEducationPage'
+import StudentEntrancePage from './features/portals/student/StudentEntrancePage'
+import StudentApplicationPage from './features/portals/student/StudentApplicationPage'
+import StudentDocumentsPage from './features/portals/student/StudentDocumentsPage'
+import StudentStatusPage from './features/portals/student/StudentStatusPage'
+import OfficerDashboardPage from './features/portals/officer/OfficerDashboardPage'
+import OfficerApplicationsPage from './features/portals/officer/OfficerApplicationsPage'
+import OfficerApplicationReviewPage from './features/portals/officer/OfficerApplicationReviewPage'
 import ReportsListPage from './features/reports/pages/ReportsListPage'
 
 // ---- Institutions ----
@@ -148,12 +160,34 @@ export default function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<RoleLanding />} />
 
         {/* Public routes */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
            <Route path="/register" element={<Register />} />
+        </Route>
+
+        {/* Role-specific admission workflows */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<RoleRoute roles={['student']} />}>
+            <Route element={<PortalLayout kind="student" />}>
+              <Route path="/student" element={<StudentDashboardPage />} />
+              <Route path="/student/profile" element={<StudentProfilePage />} />
+              <Route path="/student/education" element={<StudentEducationPage />} />
+              <Route path="/student/entrance-exam" element={<StudentEntrancePage />} />
+              <Route path="/student/application" element={<StudentApplicationPage />} />
+              <Route path="/student/documents" element={<StudentDocumentsPage />} />
+              <Route path="/student/status" element={<StudentStatusPage />} />
+            </Route>
+          </Route>
+          <Route element={<RoleRoute roles={['admission_officer','department_reviewer']} />}>
+            <Route element={<PortalLayout kind="officer" />}>
+              <Route path="/officer" element={<OfficerDashboardPage />} />
+              <Route path="/officer/applications" element={<OfficerApplicationsPage />} />
+              <Route path="/officer/applications/:id" element={<OfficerApplicationReviewPage />} />
+            </Route>
+          </Route>
         </Route>
 
         {/* Protected routes — everything here requires a logged-in user */}

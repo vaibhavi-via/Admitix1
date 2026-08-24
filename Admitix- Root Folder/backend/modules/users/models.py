@@ -129,6 +129,7 @@ class User(Base):
         foreign_keys="Application.reviewed_by",
         passive_deletes=True,
     )
+     
     application_status_changes: Mapped[List["ApplicationStatusHistory"]] = (
         relationship(
             "ApplicationStatusHistory",
@@ -149,6 +150,18 @@ class User(Base):
     audit_logs: Mapped[List["AuditLog"]] = relationship(
         "AuditLog", back_populates="user", passive_deletes=True
     )
+
+    @property
+    def role_name(self) -> str | None:
+        return self.role.role_name if self.role is not None else None
+
+    @property
+    def student_id(self):
+        return self.student_profile.student_id if self.student_profile is not None else None
+
+    @property
+    def staff_id(self):
+        return self.staff_profile.staff_id if self.staff_profile is not None else None
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<User user_id={self.user_id} email={self.email!r}>"
@@ -216,6 +229,12 @@ class Staff(Base):
         back_populates="hod",
         foreign_keys="Department.hod_staff_id",
         uselist=False,
+    )
+    assigned_applications: Mapped[List["Application"]] = relationship(
+        "Application",
+        back_populates="assigned_staff",
+        foreign_keys="Application.assigned_staff_id",
+        passive_deletes=True,
     )
 
     def __repr__(self) -> str:  # pragma: no cover

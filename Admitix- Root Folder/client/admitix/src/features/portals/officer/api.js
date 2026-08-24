@@ -1,0 +1,10 @@
+
+import api from '../../../api/axios'
+export const getApplications=()=>api.get('/applications/').then(r=>r.data)
+export const getApplication=(id)=>api.get(`/applications/${id}`).then(r=>r.data)
+export const updateApplication=(id,p)=>api.patch(`/applications/${id}`,p).then(r=>r.data)
+export const getDocuments=(applicationId)=>api.get('/documents/',{params:{application_id:applicationId}}).then(r=>r.data)
+export const updateDocument=(id,p)=>api.patch(`/documents/${id}`,p).then(r=>r.data)
+export const getStudent=(id)=>api.get(`/students/${id}`).then(r=>r.data)
+export const getEducation=(studentId)=>api.get('/educational-details/',{params:{student_id:studentId}}).then(r=>r.data)
+export const getExam=(studentId)=>api.get('/entrance-exam-scores/',{params:{student_id:studentId}}).then(r=>r.data)
