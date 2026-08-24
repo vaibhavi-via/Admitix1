@@ -1,4 +1,3 @@
-
 import api from '../../../api/axios'
 export const getApplications=()=>api.get('/applications/').then(r=>r.data)
 export const getApplication=(id)=>api.get(`/applications/${id}`).then(r=>r.data)
@@ -8,3 +7,5 @@ export const updateDocument=(id,p)=>api.patch(`/documents/${id}`,p).then(r=>r.da
 export const getStudent=(id)=>api.get(`/students/${id}`).then(r=>r.data)
 export const getEducation=(studentId)=>api.get('/educational-details/',{params:{student_id:studentId}}).then(r=>r.data)
 export const getExam=(studentId)=>api.get('/entrance-exam-scores/',{params:{student_id:studentId}}).then(r=>r.data)
+export const getPaymentSummary=()=>api.get('/dashboard/payment-summary').then(r=>r.data)
+export const getDashboardSummary=()=>api.get('/dashboard/summary').then(r=>r.data)

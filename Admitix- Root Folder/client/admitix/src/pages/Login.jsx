@@ -31,8 +31,8 @@ export default function Login() {
     e.preventDefault()
     setError('')
 
-    if (!form.email || !form.password || !form.institution_code) {
-      setError('Enter your institution code, email and password to continue.')
+    if (!form.email || !form.password) {
+      setError('Enter your email and password to continue. Institution code is required for institution users.')
       return
     }
 
@@ -81,7 +81,7 @@ export default function Login() {
             autoComplete="off"
           />
           <p className="mt-1.5 text-xs leading-5 text-slate-400">
-            The unique code your institution was registered with.
+            Required for institution accounts. Leave blank for platform-level admin login.
           </p>
         </div>
 
@@ -170,7 +170,7 @@ export default function Login() {
         </button>
       </form>
 
-<p className="mt-7 text-center text-sm text-gray-500">Don't have an account? <a href="/register" className="font-semibold text-emerald-600">Create account</a></p>
+<div className="mt-7 space-y-2 text-center text-sm text-gray-500"><p>Don't have an account? <a href="/register" className="font-semibold text-emerald-600">Create account</a></p><p><a href="/activate" className="font-semibold text-emerald-600">Staff registration / activation</a></p></div>
     </div>
   )
 } 

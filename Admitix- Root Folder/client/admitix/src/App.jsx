@@ -5,6 +5,7 @@ import AuthLayout from './layouts/AuthLayout'
 import DashboardLayout from './layouts/DashboardLayout'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ActivateAccount from './pages/ActivateAccount'
 import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
@@ -166,6 +167,8 @@ export default function App() {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
            <Route path="/register" element={<Register />} />
+          <Route path="/activate" element={<ActivateAccount />} />
+          <Route path="/staff-register" element={<ActivateAccount />} />
         </Route>
 
         {/* Role-specific admission workflows */}
@@ -192,6 +195,7 @@ export default function App() {
 
         {/* Protected routes — everything here requires a logged-in user */}
         <Route element={<ProtectedRoute />}>
+          <Route element={<RoleRoute roles={['super_admin', 'institution_admin']} />}>
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/settings" element={<Settings />} />
@@ -332,6 +336,7 @@ export default function App() {
             {/* Audit Logs */}
             <Route path="/audit-logs" element={<AuditLogsListPage />} />
             <Route path="/audit-logs/:id" element={<AuditLogDetailsPage />} />
+          </Route>
           </Route>
         </Route>
 

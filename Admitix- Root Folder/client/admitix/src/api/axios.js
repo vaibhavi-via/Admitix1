@@ -36,8 +36,10 @@ function normalizeApiError(error) {
   return error.response?.data?.message || detail || error.message || 'Something went wrong. Please try again.'
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -67,7 +69,7 @@ api.interceptors.response.use(
       if (refresh && !original?._retry && !original?.url?.includes('/auth/refresh-token')) {
         original._retry = true
         try {
-          const r = await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/auth/refresh-token`, { refresh_token: refresh })
+          const r = await axios.post(`${API_BASE_URL}/auth/refresh-token`, { refresh_token: refresh })
           localStorage.setItem('access_token', r.data.access_token)
           localStorage.setItem('refresh_token', r.data.refresh_token)
           original.headers.Authorization = `Bearer ${r.data.access_token}`

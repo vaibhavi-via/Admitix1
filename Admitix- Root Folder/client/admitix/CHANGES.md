@@ -53,3 +53,17 @@ working exactly as before; nothing was removed and no API contracts changed.
   a resolved name instead of a truncated id in every list, not just a
   copyable chip) — doable, but each of the ~20 list pages would need its
   own `render` function; happy to do this next if useful.
+
+## 2026-08-24 – Staff activation, RBAC UI and officer dashboard
+- Added staff activation page at `/activate` for first-password setup.
+- Updated staff creation UI to create an inactive admission-officer account and display the 48-hour activation token.
+- Restricted the generic administration dashboard to `super_admin` and `institution_admin` roles.
+- Improved officer dashboard with live assigned-application and payment-summary data.
+- Fixed refresh-token requests to use the configured API base URL.
+- Improved login so platform-level admins can leave institution code blank.
+
+## Staff OTP activation flow
+- Admin-created admission officer accounts remain inactive until verified.
+- Added staff OTP request/verification UI at `/staff-register` (and `/activate`).
+- Officer sets a new password after OTP verification and is signed in directly to `/officer`.
+- Local/demo mode displays the OTP when SMTP is not configured; production can configure SMTP and disable `AUTH_OTP_EXPOSE_IN_RESPONSE`.
