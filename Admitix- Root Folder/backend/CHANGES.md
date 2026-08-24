@@ -50,3 +50,12 @@ was exposed in plaintext in the file you shared.
   a broken relationship/foreign key at import time) — confirmed the new
   `/domains/` and `/domains/{domain_id}` routes are registered in the
   OpenAPI schema alongside all 26 existing modules (71 total paths).
+
+## 2026-08-24 – Staff activation, officer RBAC and dashboard hardening
+- Added admin-only staff account creation with `admission_officer` role support.
+- Added 48-hour staff activation token flow and `/auth/activate` password setup endpoint.
+- Enforced role-based permissions at the API router level for admin, admission officer and student access.
+- Added tenant/ownership checks for students, applications, documents, educational details, entrance scores, preferences, payments and notifications.
+- Restricted admission officers to assigned applications/documents/payments while retaining admission workflow access.
+- Scoped officer dashboard statistics and payment summaries to assigned applications.
+- Kept database schema unchanged; no migration is required for these changes.

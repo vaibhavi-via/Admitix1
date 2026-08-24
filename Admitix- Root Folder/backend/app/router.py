@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
+
 from core.authentication import get_current_user
+from core.permissions import require_module_access
 
 from modules.admission_cycles.router import router as admission_cycles_router
 from modules.ai_verification.router import router as ai_verification_router
@@ -30,31 +32,62 @@ from modules.students.router import router as students_router
 from modules.users.router import router as users_router
 
 api_router = APIRouter()
-api_router.include_router(admission_cycles_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(ai_verification_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(ai_document_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(application_preferences_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(applications_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(application_status_history_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(audit_logs_router, dependencies=[Depends(get_current_user)])
+
+ADMIN = {"super_admin", "institution_admin"}
+OFFICER = {"admission_officer"}
+STUDENT = {"student"}
+ADMIN_OFFICER = ADMIN | OFFICER
+ALL_PORTAL = ADMIN | OFFICER | STUDENT
+
+
+def secure(router, read_roles, write_roles=None):
+    return api_router.include_router(
+        router,
+        dependencies=[
+            Depends(get_current_user),
+            Depends(require_module_access(read_roles, write_roles)),
+        ],
+    )
+
+
+# Authentication endpoints are public except for endpoints that explicitly
+# take CurrentUser (logout/change-password/me).
 api_router.include_router(auth_router)
-api_router.include_router(chat_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(courses_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(fee_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(seat_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(dashboard_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(departments_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(document_types_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(domains_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(documents_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(educational_details_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(entrance_exam_scores_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(faculties_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(institutions_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(notifications_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(payments_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(reports_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(roles_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(staff_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(students_router, dependencies=[Depends(get_current_user)])
-api_router.include_router(users_router, dependencies=[Depends(get_current_user)])
+
+# Admin-only configuration and access management.
+secure(institutions_router, ADMIN, ADMIN)
+secure(domains_router, ADMIN, ADMIN)
+secure(roles_router, ADMIN, ADMIN)
+secure(staff_router, ADMIN, ADMIN)
+secure(users_router, ADMIN, ADMIN)
+
+# Admission officer and admin workspaces.
+secure(dashboard_router, ADMIN_OFFICER, ADMIN_OFFICER)
+secure(applications_router, ALL_PORTAL, ADMIN_OFFICER | STUDENT)
+secure(application_status_history_router, ADMIN_OFFICER, ADMIN_OFFICER)
+secure(students_router, ALL_PORTAL, ADMIN_OFFICER | STUDENT)
+secure(documents_router, ALL_PORTAL, ADMIN_OFFICER | STUDENT)
+secure(payments_router, ALL_PORTAL, ADMIN_OFFICER)
+secure(reports_router, ADMIN_OFFICER, ADMIN_OFFICER)
+secure(notifications_router, ALL_PORTAL, ADMIN_OFFICER)
+
+# Reference data: officers/students can view, only admins can change.
+secure(courses_router, ALL_PORTAL, ADMIN)
+secure(departments_router, ALL_PORTAL, ADMIN)
+secure(faculties_router, ALL_PORTAL, ADMIN)
+secure(admission_cycles_router, ALL_PORTAL, ADMIN)
+secure(document_types_router, ALL_PORTAL, ADMIN)
+secure(fee_router, ALL_PORTAL, ADMIN)
+secure(seat_router, ALL_PORTAL, ADMIN)
+
+# Student-owned admission records can be edited by the student; officers
+# review them; admins retain full access.
+secure(educational_details_router, ALL_PORTAL, ADMIN_OFFICER | STUDENT)
+secure(entrance_exam_scores_router, ALL_PORTAL, ADMIN_OFFICER | STUDENT)
+secure(application_preferences_router, ALL_PORTAL, ADMIN_OFFICER | STUDENT)
+
+# AI/document tooling is an officer/admin capability.
+secure(ai_verification_router, ADMIN_OFFICER, ADMIN_OFFICER)
+secure(ai_document_router, ADMIN_OFFICER, ADMIN_OFFICER)
+secure(chat_router, ALL_PORTAL, ADMIN_OFFICER | STUDENT)
+secure(audit_logs_router, ADMIN, ADMIN)

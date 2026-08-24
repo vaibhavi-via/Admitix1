@@ -22,111 +22,54 @@ from modules.applications.models import Application
 from modules.documents.models import Document
 from modules.payments.models import Payment
 from modules.students.models import Student
-from modules.users.models import User
+from modules.users.models import User, Staff
 
 
-def generate_admission_report(db: Session) -> list[dict]:
-    """One row per application: student name, cycle, and current
-    admission status."""
-
-    rows = (
-        db.query(
-            Application.application_id,
-            Application.application_number,
-            Application.cycle_id,
-            Application.current_status,
-            User.first_name,
-            User.last_name,
-        )
+def generate_admission_report(db: Session, current_user) -> list[dict]:
+    query = (db.query(Application.application_id, Application.application_number, Application.cycle_id, Application.current_status, User.first_name, User.last_name)
         .join(Student, Application.student_id == Student.student_id)
-        .join(User, Student.user_id == User.user_id)
-        .order_by(Application.submission_date.desc())
-        .all()
-    )
-
-    return [
-        {
-            "application_id": application_id,
-            "application_number": application_number,
-            "cycle_id": cycle_id,
-            "current_status": current_status.value,
-            "student_name": " ".join(filter(None, [first_name, last_name])),
-        }
-        for application_id, application_number, cycle_id, current_status, first_name, last_name in rows
-    ]
+        .join(User, Student.user_id == User.user_id))
+    if current_user.institution_id is not None: query = query.filter(Student.institution_id == current_user.institution_id)
+    if getattr(current_user, "role_name", None) == "admission_officer":
+        staff = db.query(Staff).filter(Staff.user_id == current_user.user_id).first()
+        query = query.filter(Application.assigned_staff_id == staff.staff_id) if staff else query.filter(False)
+    rows = query.order_by(Application.submission_date.desc()).all()
+    return [{"application_id": application_id, "application_number": application_number, "cycle_id": cycle_id, "current_status": current_status.value, "student_name": " ".join(filter(None, [first_name, last_name]))} for application_id, application_number, cycle_id, current_status, first_name, last_name in rows]
 
 
-def generate_payment_report(db: Session) -> list[dict]:
-    """One row per payment with its application and amount."""
+def generate_payment_report(db: Session, current_user) -> list[dict]:
+    query = (db.query(Payment.payment_id, Payment.application_id, Payment.amount_paid, Payment.payment_status, Payment.payment_mode, Payment.payment_date)
+        .join(Application, Payment.application_id == Application.application_id)
+        .join(Student, Application.student_id == Student.student_id))
+    if current_user.institution_id is not None: query = query.filter(Student.institution_id == current_user.institution_id)
+    if getattr(current_user, "role_name", None) == "admission_officer":
+        staff = db.query(Staff).filter(Staff.user_id == current_user.user_id).first()
+        query = query.filter(Application.assigned_staff_id == staff.staff_id) if staff else query.filter(False)
+    rows = query.order_by(Payment.payment_date.desc()).all()
+    return [{"payment_id": pid, "application_id": aid, "amount_paid": float(amount), "payment_status": status.value, "payment_mode": mode.value if mode else None, "payment_date": payment_date.isoformat()} for pid,aid,amount,status,mode,payment_date in rows]
 
-    rows = (
-        db.query(
-            Payment.payment_id,
-            Payment.application_id,
-            Payment.amount_paid,
-            Payment.payment_status,
-            Payment.payment_mode,
-            Payment.payment_date,
-        )
-        .order_by(Payment.payment_date.desc())
-        .all()
-    )
-
-    return [
-        {
-            "payment_id": payment_id,
-            "application_id": application_id,
-            "amount_paid": float(amount_paid),
-            "payment_status": payment_status.value,
-            "payment_mode": payment_mode.value if payment_mode else None,
-            "payment_date": payment_date.isoformat(),
-        }
-        for payment_id, application_id, amount_paid, payment_status, payment_mode, payment_date in rows
-    ]
-
-
-def generate_document_report(db: Session) -> list[dict]:
-    """Document verification counts, broken down by status."""
-
-    rows = (
-        db.query(Document.verification_status, func.count(Document.document_id))
-        .group_by(Document.verification_status)
-        .all()
-    )
-
+def generate_document_report(db: Session, current_user) -> list[dict]:
+    query = db.query(Document.verification_status, func.count(Document.document_id)).join(Application, Document.application_id == Application.application_id).join(Student, Application.student_id == Student.student_id)
+    if current_user.institution_id is not None: query = query.filter(Student.institution_id == current_user.institution_id)
+    if getattr(current_user, "role_name", None) == "admission_officer":
+        staff = db.query(Staff).filter(Staff.user_id == current_user.user_id).first()
+        query = query.filter(Application.assigned_staff_id == staff.staff_id) if staff else query.filter(False)
+    rows = query.group_by(Document.verification_status).all()
     report = {status.value: 0 for status in DocumentVerificationStatus}
-    for verification_status, count in rows:
-        report[verification_status.value] = count
+    for verification_status, count in rows: report[verification_status.value] = count
+    return [{"verification_status": k, "count": v} for k,v in report.items()]
 
-    return [{"verification_status": k, "count": v} for k, v in report.items()]
-
-
-def generate_student_report(db: Session) -> list[dict]:
-    """One row per student with their name and email."""
-
-    rows = (
-        db.query(
-            Student.student_id,
-            User.first_name,
-            User.last_name,
-            User.email,
-        )
-        .join(User, Student.user_id == User.user_id)
-        .order_by(User.first_name)
-        .all()
-    )
-
-    return [
-        {
-            "student_id": student_id,
-            "student_name": " ".join(filter(None, [first_name, last_name])),
-            "email": email,
-        }
-        for student_id, first_name, last_name, email in rows
-    ]
+def generate_student_report(db: Session, current_user) -> list[dict]:
+    query = db.query(Student.student_id, User.first_name, User.last_name, User.email).join(User, Student.user_id == User.user_id)
+    if current_user.institution_id is not None: query = query.filter(Student.institution_id == current_user.institution_id)
+    if getattr(current_user, "role_name", None) == "admission_officer":
+        staff = db.query(Staff).filter(Staff.user_id == current_user.user_id).first()
+        query = query.join(Application, Application.student_id == Student.student_id).filter(Application.assigned_staff_id == staff.staff_id) if staff else query.filter(False)
+    rows = query.order_by(User.first_name).all()
+    return [{"student_id": sid, "student_name": " ".join(filter(None, [first_name, last_name])), "email": email} for sid,first_name,last_name,email in rows]
 
 
-def export_report(db: Session) -> dict:
+def export_report(db: Session, current_user) -> dict:
     """Placeholder export endpoint.
 
     A real implementation would take a `ReportFormat` (csv/xlsx/pdf)

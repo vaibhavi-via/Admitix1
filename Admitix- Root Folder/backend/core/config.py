@@ -98,6 +98,20 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(
 )
 
 # ==========================================================
+# Staff OTP / Email Configuration
+# ==========================================================
+SMTP_HOST = os.getenv("SMTP_HOST", "")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USER or "no-reply@admitix.local")
+SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
+AUTH_OTP_EXPIRE_MINUTES = int(os.getenv("AUTH_OTP_EXPIRE_MINUTES", "10"))
+# Keep this enabled for local/demo environments where SMTP is not configured.
+# Set it to false in production so OTPs are only delivered by email.
+AUTH_OTP_EXPOSE_IN_RESPONSE = os.getenv("AUTH_OTP_EXPOSE_IN_RESPONSE", "true").lower() == "true"
+
+# ==========================================================
 # CORS Configuration
 # ==========================================================
 

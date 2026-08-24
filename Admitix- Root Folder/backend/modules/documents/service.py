@@ -15,7 +15,7 @@ from .schema import DocumentCreate, DocumentUpdate
 from core.authorization import require_same_institution, role_name
 from modules.applications.models import Application
 from modules.students.models import Student
-from modules.users.models import User
+from modules.users.models import User, Staff
 
 
 def create_document(db: Session, document_data: DocumentCreate, current_user: User) -> Document:
@@ -41,7 +41,14 @@ def get_documents(db: Session, current_user: User, application_id: uuid.UUID | N
 
     query = db.query(Document).join(Application, Document.application_id == Application.application_id).join(Student, Application.student_id == Student.student_id)
     if current_user.institution_id is not None: query = query.filter(Student.institution_id == current_user.institution_id)
-    if role_name(current_user) == "student": query = query.filter(Student.user_id == current_user.user_id)
+    role = role_name(current_user)
+    if role == "student":
+        query = query.filter(Student.user_id == current_user.user_id)
+    elif role == "admission_officer":
+        staff = db.query(Staff).filter(Staff.user_id == current_user.user_id).first()
+        if staff is None:
+            return []
+        query = query.filter(Application.assigned_staff_id == staff.staff_id)
     if application_id: query = query.filter(Document.application_id == application_id)
     return query.order_by(Document.uploaded_at.desc()).all()
 
@@ -58,7 +65,13 @@ def get_document_by_id(db: Session, document_id: uuid.UUID, current_user: User) 
 
     student = db.query(Student).join(Application, Application.student_id == Student.student_id).filter(Application.application_id == document.application_id).first()
     require_same_institution(current_user, student.institution_id)
-    if role_name(current_user) == "student" and student.user_id != current_user.user_id: raise HTTPException(status_code=403, detail="You cannot access this document.")
+    role = role_name(current_user)
+    if role == "student" and student.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="You cannot access this document.")
+    if role == "admission_officer":
+        staff = db.query(Staff).filter(Staff.user_id == current_user.user_id).first()
+        if staff is None or document.application.assigned_staff_id != staff.staff_id:
+            raise HTTPException(status_code=403, detail="This application is not assigned to you.")
     return document
 
 
@@ -71,6 +84,15 @@ def update_document(
     document = get_document_by_id(db, document_id, current_user)
 
     update_data = document_data.model_dump(exclude_unset=True)
+    if role_name(current_user) == "student":
+        allowed = {"file_name", "file_url"}
+        if set(update_data) - allowed:
+            raise HTTPException(status_code=403, detail="Students cannot change document verification fields.")
+    elif role_name(current_user) == "admission_officer":
+        allowed = {"verification_status", "remarks", "verified_by"}
+        if set(update_data) - allowed:
+            raise HTTPException(status_code=403, detail="Admission officers can only manage document verification.")
+        update_data["verified_by"] = current_user.user_id if "verification_status" in update_data else update_data.get("verified_by")
     for field, value in update_data.items():
         setattr(document, field, value)
 

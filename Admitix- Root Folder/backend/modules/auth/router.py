@@ -10,7 +10,8 @@ from .schema import (
     # LoginResponse,
     TokenResponse,
     RefreshTokenRequest,
-    ChangePasswordRequest,
+    ActivateAccountRequest,
+    ChangePasswordRequest, StaffOtpRequest, StaffOtpResponse, StaffOtpVerifyRequest,
 )
 
 from .service import (
@@ -20,6 +21,7 @@ from .service import (
     change_password,
     get_current_user_profile,
     register_student,
+    activate_staff_account, request_staff_otp, verify_staff_otp,
 )
 
 router = APIRouter(
@@ -43,6 +45,22 @@ async def login(
     db: Session = Depends(get_db),
 ):
     return login_user(db, login_data)
+
+
+
+
+@router.post("/staff/request-otp", response_model=StaffOtpResponse)
+async def request_staff_otp_route(data: StaffOtpRequest, db: Session = Depends(get_db)):
+    return request_staff_otp(db, data)
+
+
+@router.post("/staff/verify-otp", response_model=TokenResponse)
+async def verify_staff_otp_route(data: StaffOtpVerifyRequest, db: Session = Depends(get_db)):
+    return verify_staff_otp(db, data)
+
+@router.post("/activate", response_model=TokenResponse)
+async def activate_account(data: ActivateAccountRequest, db: Session = Depends(get_db)):
+    return activate_staff_account(db, data)
 
 
 @router.post("/refresh-token")

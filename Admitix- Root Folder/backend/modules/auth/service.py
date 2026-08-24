@@ -17,6 +17,11 @@ that dependency is added to the router.
 from __future__ import annotations
 
 import uuid
+import hashlib
+import hmac
+import secrets
+import smtplib
+from email.message import EmailMessage
 from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
@@ -25,17 +30,174 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from core.config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
+from core.config import (
+    ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY,
+    AUTH_OTP_EXPIRE_MINUTES, AUTH_OTP_EXPOSE_IN_RESPONSE,
+    SMTP_FROM, SMTP_HOST, SMTP_PASSWORD, SMTP_PORT, SMTP_USE_TLS, SMTP_USER,
+)
+from core.security import create_token, decode_token as decode_security_token
 from modules.institutions.models import Institution
 from modules.users.models import User
 from modules.students.models import Student
 from modules.roles.models import Role
 
-from .schema import ChangePasswordRequest, LoginRequest, RefreshTokenRequest, RegisterRequest, TokenResponse
+from .schema import (
+    ActivateAccountRequest, ChangePasswordRequest, LoginRequest, RefreshTokenRequest,
+    RegisterRequest, TokenResponse, StaffOtpRequest, StaffOtpResponse, StaffOtpVerifyRequest,
+)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 REFRESH_TOKEN_EXPIRE_DAYS = 7
+
+ACTIVATION_TOKEN_EXPIRE_HOURS = 48
+ACTIVATION_TOKEN_TYPE = "staff_activation"
+STAFF_OTP_REQUEST_TYPE = "staff_otp"
+
+
+def _otp_hash(otp: str) -> str:
+    return hashlib.sha256(otp.encode("utf-8")).hexdigest()
+
+
+def _send_staff_otp_email(email: str, otp: str, first_name: str) -> bool:
+    """Send OTP when SMTP is configured; return False for local/demo fallback."""
+    if not SMTP_HOST or not SMTP_USER or not SMTP_PASSWORD:
+        return False
+    message = EmailMessage()
+    message["Subject"] = "Admitix admission officer verification code"
+    message["From"] = SMTP_FROM
+    message["To"] = email
+    message.set_content(
+        f"Hello {first_name},\n\n"
+        f"Your Admitix verification code is: {otp}\n\n"
+        f"This code expires in {AUTH_OTP_EXPIRE_MINUTES} minutes. "
+        "If you did not request this, please contact your administrator.\n\n"
+        "Admitix"
+    )
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
+        if SMTP_USE_TLS:
+            server.starttls()
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        server.send_message(message)
+    return True
+
+
+def request_staff_otp(db: Session, data: StaffOtpRequest) -> StaffOtpResponse:
+    institution = (
+        db.query(Institution)
+        .filter(func.upper(Institution.institution_code) == data.institution_code.strip().upper())
+        .first()
+    )
+    if institution is None or not institution.status:
+        raise HTTPException(status_code=400, detail="Invalid or inactive institution code.")
+
+    user = (
+        db.query(User)
+        .filter(User.institution_id == institution.institution_id, func.lower(User.email) == str(data.email).lower())
+        .first()
+    )
+    if user is None or user.staff_profile is None or user.role_name != "admission_officer":
+        raise HTTPException(status_code=404, detail="No pending admission officer account was found for this email.")
+    if user.is_active or user.staff_profile.status:
+        raise HTTPException(status_code=409, detail="This staff account is already active. Please log in.")
+
+    otp = f"{secrets.randbelow(1_000_000):06d}"
+    challenge_token = create_token(
+        {
+            "sub": str(user.user_id),
+            "type": STAFF_OTP_REQUEST_TYPE,
+            "otp_hash": _otp_hash(otp),
+        },
+        expires_delta=timedelta(minutes=AUTH_OTP_EXPIRE_MINUTES),
+    )
+
+    try:
+        delivered = _send_staff_otp_email(str(user.email), otp, user.first_name)
+    except (OSError, smtplib.SMTPException) as exc:
+        delivered = False
+        if not AUTH_OTP_EXPOSE_IN_RESPONSE:
+            raise HTTPException(status_code=503, detail="OTP email service is unavailable. Please try again later.") from exc
+
+    return StaffOtpResponse(
+        message=("OTP sent to the registered email address." if delivered else "OTP generated for local/demo use. Configure SMTP to deliver it by email."),
+        expires_in_seconds=AUTH_OTP_EXPIRE_MINUTES * 60,
+        dev_otp=(otp if (not delivered and AUTH_OTP_EXPOSE_IN_RESPONSE) else None),
+        challenge_token=challenge_token,
+    )
+
+def verify_staff_otp(db: Session, data: StaffOtpVerifyRequest) -> TokenResponse:
+    payload = decode_security_token(data.challenge_token)
+    if not payload or payload.get("type") != STAFF_OTP_REQUEST_TYPE or not payload.get("sub") or not payload.get("otp_hash"):
+        raise HTTPException(status_code=400, detail="Invalid or expired OTP challenge.")
+    try:
+        user_id = uuid.UUID(payload["sub"])
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="Invalid OTP challenge.")
+
+    institution = (
+        db.query(Institution)
+        .filter(func.upper(Institution.institution_code) == data.institution_code.strip().upper())
+        .first()
+    )
+    if institution is None or not institution.status:
+        raise HTTPException(status_code=400, detail="Invalid or inactive institution code.")
+
+    user = db.query(User).filter(User.user_id == user_id, User.institution_id == institution.institution_id).first()
+    if user is None or user.staff_profile is None or user.role_name != "admission_officer":
+        raise HTTPException(status_code=404, detail="Staff account not found.")
+    if user.email.lower() != str(data.email).lower():
+        raise HTTPException(status_code=400, detail="Email does not match the OTP request.")
+    if user.is_active or user.staff_profile.status:
+        raise HTTPException(status_code=409, detail="This staff account is already active. Please log in.")
+    if not hmac.compare_digest(_otp_hash(data.otp), payload["otp_hash"]):
+        raise HTTPException(status_code=400, detail="Invalid OTP.")
+
+    user.password_hash = hash_password(data.new_password)
+    user.is_active = True
+    user.staff_profile.status = True
+    db.commit()
+    db.refresh(user)
+    return TokenResponse(
+        access_token=create_access_token(user),
+        refresh_token=create_refresh_token(user),
+        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        user=user,
+    )
+
+
+def create_staff_activation_token(user: User) -> str:
+    return create_token(
+        {"sub": str(user.user_id), "type": ACTIVATION_TOKEN_TYPE},
+        expires_delta=timedelta(hours=ACTIVATION_TOKEN_EXPIRE_HOURS),
+    )
+
+
+def activate_staff_account(db: Session, data: ActivateAccountRequest) -> TokenResponse:
+    payload = decode_security_token(data.activation_token)
+    if not payload or payload.get("type") != ACTIVATION_TOKEN_TYPE or not payload.get("sub"):
+        raise HTTPException(status_code=401, detail="Invalid or expired activation token.")
+    try:
+        user_id = uuid.UUID(payload["sub"])
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=401, detail="Invalid activation token.")
+
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if user is None or user.staff_profile is None:
+        raise HTTPException(status_code=404, detail="Staff account not found.")
+    if user.is_active:
+        raise HTTPException(status_code=409, detail="This staff account is already active. Please log in.")
+
+    user.password_hash = hash_password(data.new_password)
+    user.is_active = True
+    user.staff_profile.status = True
+    db.commit()
+    db.refresh(user)
+    return TokenResponse(
+        access_token=create_access_token(user),
+        refresh_token=create_refresh_token(user),
+        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        user=user,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -124,7 +286,7 @@ def login_user(db: Session, login_data: LoginRequest) -> TokenResponse:
 
     if login_data.institution_code:
         query = query.join(Institution, User.institution_id == Institution.institution_id).filter(
-            Institution.institution_code == login_data.institution_code
+            func.upper(Institution.institution_code) == login_data.institution_code.strip().upper()
         )
     else:
         query = query.filter(User.institution_id.is_(None))
@@ -142,6 +304,10 @@ def login_user(db: Session, login_data: LoginRequest) -> TokenResponse:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="This account has been deactivated.",
         )
+
+    if user.role_name == "admission_officer":
+        if user.staff_profile is None or not user.staff_profile.status:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This staff account is not active.")
 
     user.last_login = datetime.now(timezone.utc)
     db.commit()

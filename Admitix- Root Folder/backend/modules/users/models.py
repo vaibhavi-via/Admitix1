@@ -129,7 +129,6 @@ class User(Base):
         foreign_keys="Application.reviewed_by",
         passive_deletes=True,
     )
-     
     application_status_changes: Mapped[List["ApplicationStatusHistory"]] = (
         relationship(
             "ApplicationStatusHistory",

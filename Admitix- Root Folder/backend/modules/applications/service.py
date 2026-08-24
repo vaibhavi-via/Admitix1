@@ -106,7 +106,13 @@ def get_application_by_id(db: Session, application_id: uuid.UUID, current_user: 
         )
 
     require_same_institution(current_user, application.student.institution_id)
-    if role_name(current_user) == "student" and application.student.user_id != current_user.user_id: raise HTTPException(status_code=403, detail="You cannot access this application.")
+    role = role_name(current_user)
+    if role == "student" and application.student.user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="You cannot access this application.")
+    if role in {"admission_officer", "department_reviewer"}:
+        staff = db.query(Staff).filter(Staff.user_id == current_user.user_id).first()
+        if staff is None or application.assigned_staff_id != staff.staff_id:
+            raise HTTPException(status_code=403, detail="This application is not assigned to you.")
     return application
 
 
